@@ -1,0 +1,1388 @@
+[
+{
+"id": 768,
+"name": "QCY SP7",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 769,
+"name": "QCY SP300",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 770,
+"name": "QCY SP7 PLUS",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 771,
+"name": "QCY SP2",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 772,
+"name": "QCY SP2 MINI",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 774,
+"name": "QCY SP3",
+"kind": "speaker",
+"supported": true,
+"note": null
+},
+{
+"id": 776,
+"name": "QCY SP75",
+"kind": "speaker",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 4577,
+"name": "C1",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 4578,
+"name": "C2",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 4579,
+"name": "QCY Crossky Link2",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 4580,
+"name": "QCY C1 OPEN",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 4581,
+"name": "QCY C1 CANAL",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 4583,
+"name": "QCY Era 5",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 6513,
+"name": "QCY ArcBuds Lite",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6514,
+"name": "QCY AilyBuds Lite",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6515,
+"name": "TWS QT29",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6516,
+"name": "TWS QT27",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6517,
+"name": "QCY T29 APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6518,
+"name": "QCY Buds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6519,
+"name": "QCY T43 Buds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6520,
+"name": "QCY T41 Motif",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 6577,
+"name": "QCY AilyPodsBuds Lite",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 16737,
+"name": "QCY Crossky Link",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 16738,
+"name": "QCY-T22APP",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 16753,
+"name": "H2",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16754,
+"name": "H2 Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16755,
+"name": "QCY H3",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16756,
+"name": "QCY H2APP PRO HEADSET",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16757,
+"name": "QCY H3 ANC HEADSET",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16758,
+"name": "QCY H3 Lite",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16759,
+"name": "QCY H3 Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16760,
+"name": "QCY H3",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16761,
+"name": "QCY Era 7",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16762,
+"name": "QCY H3 Lite ANC APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16763,
+"name": "QCY H3 PRO ANC",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16764,
+"name": "QCY H3S",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16765,
+"name": "QCY H3S EXTREME ANC",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16767,
+"name": "QCY H3 ANC HEADSET",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 16818,
+"name": "QCY Heroad V200",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 16821,
+"name": "QCY Heroad VT200",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 16822,
+"name": "QCY H2S Lite",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 16823,
+"name": "HEROAD GT2",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 16824,
+"name": "QCY BARAM",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 16849,
+"name": "QCY H4",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 16850,
+"name": "QCY H4 ANC HEADSET",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 18289,
+"name": "DT10",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18290,
+"name": "T13 ANC",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18293,
+"name": "QCY Crossky GTR",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18294,
+"name": "QCY T13 ANC2",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18295,
+"name": "QCY T13 ANC2 APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18296,
+"name": "QCY AilyBuds E10",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18297,
+"name": "QCY AilyBuds E20",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18298,
+"name": "QCY MeloBuds N50",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18299,
+"name": "QCY Crossky C10",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18300,
+"name": "QCY HT12 MeloBuds N50",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18301,
+"name": "QCY CT01 APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18302,
+"name": "QCY-T37 ANC AilyBuds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18303,
+"name": "QCY-T35 AilyBuds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18801,
+"name": "T17",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18802,
+"name": "T17",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18803,
+"name": "T1C",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18804,
+"name": "T19",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18805,
+"name": "T2C",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18806,
+"name": "AilyPods",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18808,
+"name": "DT08",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18809,
+"name": "QCY FairyBuds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18810,
+"name": "DT08",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18811,
+"name": "DT08",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18812,
+"name": "QCY Ailypods Neo",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 18813,
+"name": "T1C Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18814,
+"name": "QCY Ailypods Neo",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 18815,
+"name": "QCY T13X",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 18863,
+"name": "T2C",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 18961,
+"name": "T18",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19057,
+"name": "T5",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19058,
+"name": "QT12",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19059,
+"name": "T13",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19061,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19063,
+"name": "T5",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19064,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19065,
+"name": "M18",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19067,
+"name": "T8S",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19068,
+"name": "T13 Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19069,
+"name": "T13",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19071,
+"name": "QCY Air",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19218,
+"name": "QT16",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19219,
+"name": "T17S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19220,
+"name": "T18",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19221,
+"name": "DT06",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19393,
+"name": "HT03",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19394,
+"name": "HT02",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19396,
+"name": "HT03",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19397,
+"name": "HT02",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19489,
+"name": "G1",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19569,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19570,
+"name": "QT12",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19571,
+"name": "T5",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19572,
+"name": "M18",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19573,
+"name": "T7",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19574,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19575,
+"name": "M18",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19576,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19649,
+"name": "HT01C",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19730,
+"name": "T1X",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19732,
+"name": "QT10S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19733,
+"name": "T4S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19735,
+"name": "QCY-QT11S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19745,
+"name": "T5",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19746,
+"name": "T5S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19747,
+"name": "T6",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19748,
+"name": "T3",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19749,
+"name": "T5 Pro",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19751,
+"name": "T4",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19761,
+"name": "T4",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19762,
+"name": "T1C",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19763,
+"name": "T1S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19764,
+"name": "T9S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19765,
+"name": "T6",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19777,
+"name": "Melobuds ANC",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19778,
+"name": "TWS HT05",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19779,
+"name": "QCY ArcBuds",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19780,
+"name": "QCY Crossky Link2",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19782,
+"name": "TWS HT07",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19783,
+"name": "QCY HT07 ANC APP",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19784,
+"name": "QCY AilyBuds Pro",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19785,
+"name": "HT08",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19786,
+"name": "QCY MeloBuds Pro",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19787,
+"name": "QCY AilyBuds Pro+",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19788,
+"name": "QCY HT10ANC APP",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19789,
+"name": "QCY HT10 Hires ANC APP",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19790,
+"name": "QCY HT08 MeloBuds Pro Plus",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19791,
+"name": "QCY Crossky R70",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19794,
+"name": "QCY Crossky C30",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19795,
+"name": "QCY T33 APP",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19796,
+"name": "QCY Crossky C30S",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19797,
+"name": "QCY Crossky C50",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19798,
+"name": "QCY Crossky R50",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19799,
+"name": "QCY Crossky C50",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19801,
+"name": "QCY CT06 BlueTooth 6.0",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19802,
+"name": "QCY RACE",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19803,
+"name": "QCY Crossky C50S",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19804,
+"name": "QCY Crossky C50S",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19805,
+"name": "QCY MeloBuds A30",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19825,
+"name": "T7",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19826,
+"name": "T8",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 19841,
+"name": "T7S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19842,
+"name": "T8S",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19846,
+"name": "QT12",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19857,
+"name": "T9",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19858,
+"name": "T7",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19859,
+"name": "T8",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19860,
+"name": "T1C",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19861,
+"name": "M10",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19862,
+"name": "T1S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19863,
+"name": "T2C",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19865,
+"name": "QT12S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19866,
+"name": "T13",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19873,
+"name": "HT01",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 19889,
+"name": "T8",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19905,
+"name": "QT10",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19906,
+"name": "QT11",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19908,
+"name": "QT12S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19909,
+"name": "QT10 Pro",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 19921,
+"name": "HT03S",
+"kind": "earbuds",
+"supported": true,
+"note": null
+},
+{
+"id": 22897,
+"name": "QCY T13X APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23153,
+"name": "QCY T13X",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23154,
+"name": "QCY Crossky GTR2",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23155,
+"name": "QCY MeloBuds Neo",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23156,
+"name": "TWS QT26",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23157,
+"name": "QCY AilyBuds Clear",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23158,
+"name": "QCY T13X APP",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23159,
+"name": "QCY T30 AIR",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23160,
+"name": "QCY T31 MeloBuds Neo",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 23872,
+"name": "QCY MeloBuds N70",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23873,
+"name": "QCY AilyBuds E50",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23874,
+"name": "QCY MeloBuds N60",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23875,
+"name": "CT03",
+"kind": "earbuds",
+"supported": false,
+"note": "QCY publishes no settings for this model"
+},
+{
+"id": 23877,
+"name": "QCY MeloBuds N70",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23878,
+"name": "QCY AilyBuds E50",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23879,
+"name": "QCY MeloBuds N60",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23880,
+"name": "QCY MeloBuds N70i",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23881,
+"name": "QCY MeloBuds N70i",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23883,
+"name": "QCY HT19 MeloBuds DUAL BT6",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 23884,
+"name": "QCY MeloBuds HT18 Lite",
+"kind": "earbuds",
+"supported": true,
+"note": "A few of this model's features aren't available yet"
+},
+{
+"id": 32881,
+"name": "QCY MeloBuds N30",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32882,
+"name": "QCY Buds ANC",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32883,
+"name": "QCY HT16 MeloBuds",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32884,
+"name": "QCY MeloBuds N20",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32885,
+"name": "QCY T13 Plus",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32886,
+"name": "QCY MeloBuds A30",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32887,
+"name": "QCY T13 Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32889,
+"name": "QCY MeloBuds N20 Pro",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32890,
+"name": "QCY Crossky C50i",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32891,
+"name": "QCY MeloBuds N65",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32892,
+"name": "QCY HT20 MeloBuds NEO BT6",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32893,
+"name": "QCY MeloBuds A30",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 32894,
+"name": "QCY MeloBuds N65",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+},
+{
+"id": 36977,
+"name": "QCY T13 PRO ANC BT6",
+"kind": "earbuds",
+"supported": false,
+"note": "Uses the JieLi connection protocol"
+}
+]

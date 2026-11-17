@@ -1,10 +1,11 @@
 import AppKit
 import IOBluetooth
 import Observation
+import QCYKit
 
 /// Classic Bluetooth (A2DP/HFP) connection between this Mac and the earbuds.
 ///
-/// macOS negotiates SBC or AAC here. It has no LDAC encoder, so the LDAC switch only changes the
+/// macOS negotiates SBC or AAC here. It has no LDAC encoder, so an LDAC switch only changes the
 /// earbuds' configuration for other sources such as an Android phone.
 @Observable
 final class AudioLink: NSObject {
@@ -16,6 +17,7 @@ final class AudioLink: NSObject {
     private(set) var lastError: String?
 
     @ObservationIgnored private var device: IOBluetoothDevice?
+    @ObservationIgnored private var target: QCYAdvertisement?
     @ObservationIgnored private var connectNotification: IOBluetoothUserNotification?
     @ObservationIgnored private var disconnectNotification: IOBluetoothUserNotification?
 
@@ -26,15 +28,34 @@ final class AudioLink: NSObject {
             forConnectNotifications: self, selector: #selector(deviceDidConnect(_:device:)))
     }
 
+    /// Addresses of every device paired with this Mac (used to recognise earbuds over BLE).
+    var pairedAddresses: [String] {
+        ((IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? []).compactMap(\.addressString)
+    }
+
+    /// Follows the earbuds the control link found, matched by their Classic address.
+    func focus(on advertisement: QCYAdvertisement?) {
+        guard advertisement != target else { return }
+        target = advertisement
+        refresh()
+    }
+
     func refresh() {
-        let paired = (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? []
-        device = paired.first { device in
-            let name = device.name ?? ""
-            return name.localizedCaseInsensitiveContains("MeloBuds") && !name.hasSuffix("-APP")
+        let paired = ((IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? [])
+            .filter { !($0.name ?? "").hasSuffix("-APP") }
+        let match: IOBluetoothDevice? = if let target {
+            paired.first { $0.addressString.map(target.matchesClassicAddress) ?? false }
+        } else {
+            paired.first { ($0.name ?? "").localizedCaseInsensitiveContains("QCY") }
         }
-        name = device?.name
-        address = device?.addressString?.uppercased()
-        isPaired = device != nil
+        if match?.addressString != device?.addressString {
+            disconnectNotification?.unregister()
+            disconnectNotification = nil
+        }
+        device = match
+        name = match?.name
+        address = match?.addressString?.uppercased().replacingOccurrences(of: "-", with: ":")
+        isPaired = match != nil
         updateConnectionState()
     }
 
@@ -91,7 +112,6 @@ final class AudioLink: NSObject {
 
     @objc private nonisolated func deviceDidConnect(_ notification: IOBluetoothUserNotification,
                                                      device: IOBluetoothDevice) {
-        guard device.name?.localizedCaseInsensitiveContains("MeloBuds") == true else { return }
         Task { @MainActor in self.refresh() }
     }
 

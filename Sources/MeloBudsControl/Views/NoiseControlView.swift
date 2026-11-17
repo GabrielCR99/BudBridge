@@ -5,47 +5,52 @@ struct NoiseControlView: View {
     let control: ControlLink
 
     var body: some View {
-        let current = control.settings.noiseControl ?? .off
-        Form {
-            Section {
-                NoiseKindPicker(control: control, current: current)
-            }
-
-            switch current {
-            case .noiseCanceling(let scene):
-                sceneSection(scene)
-            case .transparency(let level):
-                transparencySection(level: level, vocal: false)
-            case .vocalTransparency:
-                transparencySection(level: 4, vocal: true)
-            case .off:
+        if let panel = control.panel?.noiseControl {
+            let value = NoiseValue.value(in: control.state)
+            let mode = value.flatMap(panel.mode(for:))
+            Form {
                 Section {
-                    Text("Noise canceling and transparency are off.")
-                        .foregroundStyle(.secondary)
+                    NoiseModePicker(control: control, panel: panel)
+                }
+                if let mode, let value {
+                    switch mode.kind {
+                    case .scenes(let scenes):
+                        sceneSections(scenes, value: value)
+                    case .levels(let levels, let vocal):
+                        levelSection(levels, vocal: vocal, value: value)
+                    case .single:
+                        EmptyView()
+                    }
+                } else {
+                    Section {
+                        Text("Waiting for the earbuds to report their current mode…")
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
     }
 
     @ViewBuilder
-    private func sceneSection(_ scene: ANCScene) -> some View {
+    private func sceneSections(_ scenes: [NoiseScene], value: Int) -> some View {
+        let current = scenes.first { $0.values.contains(value) }
         Section("Scene") {
-            ForEach(ANCScene.Kind.allCases) { kind in
+            ForEach(scenes) { scene in
                 Button {
-                    control.set(noiseControl: .noiseCanceling(kind.scene(strength: scene.strength ?? 2)))
+                    // Keep the current strength step when switching scenes.
+                    let step = current.map { value - $0.values.lowerBound } ?? (scene.values.count - 1)
+                    control.setNoise(min(scene.values.lowerBound + step, scene.values.upperBound))
                 } label: {
                     HStack {
-                        Label {
-                            VStack(alignment: .leading) {
-                                Text(kind.title)
-                                Text(kind.detail).font(.caption).foregroundStyle(.secondary)
+                        VStack(alignment: .leading) {
+                            Text(scene.name)
+                            if let detail = scene.detail, !detail.isEmpty {
+                                Text(detail).font(.caption).foregroundStyle(.secondary)
                             }
-                        } icon: {
-                            Image(systemName: kind.symbol)
                         }
                         Spacer()
-                        if kind == scene.kind {
+                        if scene == current {
                             Image(systemName: "checkmark").foregroundStyle(.tint)
                         }
                     }
@@ -55,15 +60,12 @@ struct NoiseControlView: View {
             }
         }
 
-        if let strength = scene.strength {
+        if let current, current.values.count > 1 {
             Section("Strength") {
-                Picker("Strength", selection: Binding(
-                    get: { strength },
-                    set: { control.set(noiseControl: .noiseCanceling(scene.with(strength: $0))) }
-                )) {
-                    Text("Light").tag(UInt8(0))
-                    Text("Medium").tag(UInt8(1))
-                    Text("Strong").tag(UInt8(2))
+                Picker("Strength", selection: Binding(get: { value }, set: { control.setNoise($0) })) {
+                    ForEach(Array(current.values.enumerated()), id: \.element) { index, step in
+                        Text("Level \(index + 1)").tag(step)
+                    }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -72,20 +74,23 @@ struct NoiseControlView: View {
     }
 
     @ViewBuilder
-    private func transparencySection(level: UInt8, vocal: Bool) -> some View {
-        Section("Transparency") {
-            Toggle("Vocal enhancement", isOn: Binding(
-                get: { vocal },
-                set: { control.set(noiseControl: $0 ? .vocalTransparency : .transparency(level: level)) }
-            ))
-            if !vocal {
-                LabeledContent("Ambient level") {
+    private func levelSection(_ levels: ClosedRange<Int>, vocal: Int?, value: Int) -> some View {
+        let isVocal = vocal == value
+        Section {
+            if let vocal {
+                Toggle("Vocal enhancement", isOn: Binding(
+                    get: { isVocal },
+                    set: { on in control.setNoise(on ? vocal : levels.lowerBound + (levels.count - 1) / 2) }
+                ))
+            }
+            if !isVocal {
+                LabeledContent("Level") {
                     Slider(
                         value: Binding(
-                            get: { Double(level) },
-                            set: { control.set(noiseControl: .transparency(level: UInt8($0.rounded()))) }
+                            get: { Double(levels.contains(value) ? value : levels.lowerBound) },
+                            set: { control.setNoise(Int($0.rounded())) }
                         ),
-                        in: 1...6, step: 1
+                        in: Double(levels.lowerBound)...Double(levels.upperBound), step: 1
                     ) {
                         EmptyView()
                     } minimumValueLabel: {

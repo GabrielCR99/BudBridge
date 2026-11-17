@@ -5,30 +5,45 @@ struct TouchControlsView: View {
     let control: ControlLink
 
     var body: some View {
-        Form {
-            ForEach([true, false], id: \.self) { left in
-                Section(left ? "Left Earbud" : "Right Earbud") {
-                    ForEach(TouchGesture.allCases.filter { $0.isLeft == left }) { gesture in
-                        Picker(gesture.title, selection: Binding(
-                            get: { control.touchControls[gesture] ?? TouchAction.none },
-                            set: { control.set($0, for: gesture) }
-                        )) {
-                            ForEach(TouchAction.allCases) { action in
-                                Text(action.title).tag(action)
+        if let touch = control.panel?.touch {
+            Form {
+                ForEach(touch.groups) { group in
+                    Section(group.name) {
+                        ForEach(group.controls) { item in
+                            Picker(item.gesture, selection: Binding(
+                                get: { item.selection(in: control.state)?.value ?? [] },
+                                set: { value in
+                                    if let option = item.options.first(where: { $0.value == value }) {
+                                        control.set(option, for: item)
+                                    }
+                                }
+                            )) {
+                                if item.selection(in: control.state) == nil {
+                                    Text("—").tag([UInt8]())
+                                }
+                                ForEach(item.options) { option in
+                                    Text(option.name).tag(option.value)
+                                }
                             }
                         }
                     }
                 }
-            }
-            Section {
-                LabeledContent("Calls") {
-                    Text("Double tap answers or ends · Long press (1.5 s) declines")
-                        .foregroundStyle(.secondary)
+                if !touch.callGestures.isEmpty {
+                    Section {
+                        ForEach(touch.callGestures, id: \.self) { gesture in
+                            LabeledContent(gesture.name) {
+                                Text(gesture.left == gesture.right ? gesture.left : "L: \(gesture.left) · R: \(gesture.right)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    } header: {
+                        Text("Calls")
+                    } footer: {
+                        Text("Call gestures are fixed by the firmware.")
+                    }
                 }
-            } footer: {
-                Text("Call gestures are fixed by the firmware.")
             }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
     }
 }

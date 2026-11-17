@@ -4,29 +4,33 @@ import SwiftUI
 struct MenuBarPanel: View {
     @Environment(Headphones.self) private var headphones
     @Environment(\.openWindow) private var openWindow
+    @State private var pending: ToggleItem?
 
     var body: some View {
         let control = headphones.control
         let audio = headphones.audio
+        let battery = control.state.battery
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("MeloBuds Pro").font(.headline)
+                Text(control.isReady ? control.modelName : "QCY Earbuds").font(.headline)
                 Spacer()
                 LinkStatusBadge(control: control)
             }
 
             HStack(spacing: 18) {
-                MiniBattery(title: "L", level: control.battery?.left)
-                MiniBattery(title: "R", level: control.battery?.right)
-                MiniBattery(title: "Case", level: control.battery?.chargingCase)
+                MiniBattery(title: "L", level: battery?.left)
+                MiniBattery(title: "R", level: battery?.right)
+                MiniBattery(title: "Case", level: battery?.chargingCase)
             }
             .frame(maxWidth: .infinity)
 
-            if control.isReady, let noise = control.settings.noiseControl {
-                NoiseKindPicker(control: control, current: noise)
-                Toggle("Gaming Mode", isOn: Binding(get: { control.settings.lowLatency ?? false },
-                                                    set: { control.set(lowLatency: $0) }))
-                    .toggleStyle(.switch)
+            if control.isReady {
+                if let noise = control.panel?.noiseControl {
+                    NoiseModePicker(control: control, panel: noise)
+                }
+                if let gaming = gamingToggle {
+                    PanelToggle(control: control, item: gaming, pending: $pending)
+                }
             } else if control.phase == .paused {
                 Button("Take Control from Phone") { control.resume() }
             } else {
@@ -54,7 +58,15 @@ struct MenuBarPanel: View {
         }
         .padding(16)
         .frame(width: 320)
+        .restartConfirmation($pending, control: control)
         .onAppear { audio.refresh() }
+    }
+
+    private var gamingToggle: ToggleItem? {
+        for case .toggle(let t) in headphones.control.panel?.settings ?? [] where t.stateCommand == CommandID.lowLatency.rawValue {
+            return t
+        }
+        return nil
     }
 }
 

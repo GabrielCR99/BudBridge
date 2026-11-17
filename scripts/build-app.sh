@@ -12,6 +12,7 @@ mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin" "$app/Contents/MacOS/MeloBudsControl"
 cp Resources/Info.plist "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
+cp -R Resources/Panels "$app/Contents/Resources/Panels"
 
 codesign --force --options runtime --sign - "$app"
 echo "Built $app"

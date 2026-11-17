@@ -1,15 +1,19 @@
 # MeloBuds Control
 
-A native macOS app for the **QCY MeloBuds Pro**. It covers the official QCY phone app's earbud
-settings plus the Mac's own Bluetooth audio connection.
+A native macOS app for **QCY earbuds**, built and tested with the MeloBuds Pro. Like the official QCY
+phone app, it builds its screens from each model's settings list ("control panel"), so it supports
+**101 QCY models** that use the same Bluetooth LE protocol, plus the Mac's own audio connection.
 
 - **Audio link** (Classic Bluetooth, IOBluetooth): connect or disconnect the earbuds from this Mac.
-- **Control link** (Bluetooth LE, CoreBluetooth): battery, noise control (ANC scenes and strength,
-  transparency, vocal), EQ presets and a 10-band custom EQ, channel balance, touch controls,
-  LDAC, dual device connection, gaming mode, wear detection, sleep mode, prompt volume and language,
-  auto power-off, rename, reset and factory reset.
+- **Control link** (Bluetooth LE, CoreBluetooth): battery and whatever the model's settings list offers:
+  noise control (modes, scenes, strengths, transparency levels), EQ presets and custom EQ (parametric or
+  10-band), balance, touch controls, switches such as LDAC, dual device, gaming and sleep mode, value lists
+  such as prompt volume, language and auto power-off, wear detection, rename and resets.
 - **Find earbuds**: plays a loud chirp through the current output, which is what the phone app does too.
 - Menu-bar extra with battery, noise mode and gaming mode.
+
+Earbuds paired with this Mac connect automatically; other QCY earbuds nearby are listed under
+**Connections**, where unsupported models say why.
 
 > **New to the code?** Open [`docs/melobuds-control.html`](docs/melobuds-control.html) in a browser: an interactive walkthrough of the protocol and the Swift code, with Dart/Flutter comparisons.
 
@@ -34,8 +38,15 @@ System Settings › Bluetooth.
   on the phone holds it, the Mac can't connect. Use **Release to Phone** and **Take Control** to hand it over.
 - **LDAC**: macOS has no LDAC encoder, so the Mac always streams AAC or SBC. The switch changes the
   earbuds' setting for Android sources.
-- **LDAC and dual device connection are mutually exclusive.** Changing either one restarts the earbuds,
-  and the app reconnects by itself. Turn on dual device connection to keep your phone and the Mac connected together.
+- **LDAC and dual device connection are mutually exclusive** on models that have both. Changing either one
+  restarts the earbuds, and the app reconnects by itself.
+- **Supported models.** The 101 models bundled in `Resources/Panels` use GATT service `A001`. JieLi-based
+  models (91, e.g. QCY H3, MeloBuds N20/N30/N50) send the same commands over JieLi's own transport and
+  aren't supported. Not available yet: timed power-off, fit test, firmware updates, and the equalizer on
+  the 9 "ZR" models. Only the MeloBuds Pro has been tested on real hardware.
+- **Settings lists.** The app ships a snapshot of QCY's lists and, after connecting, fetches the one for
+  the earbuds' firmware from `api.watch.qcy.com` (as the phone app does), cached in
+  `~/Library/Application Support/MeloBudsControl/Panels`.
 
 ## Protocol (reverse-engineered from `com.qcymall.googleearphonesetup` 4.0.7)
 

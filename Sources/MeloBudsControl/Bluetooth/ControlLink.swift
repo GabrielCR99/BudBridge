@@ -4,52 +4,76 @@ import Observation
 import OSLog
 import QCYKit
 
-/// BLE control channel to the earbuds (GATT service A001).
+/// BLE control channel to QCY earbuds (GATT service A001), driven by the model's settings list.
 ///
-/// The earbuds expose this on a separate LE identity ("QCY MeloBuds Pro-APP"). They accept a single
-/// LE control connection, so while the phone app holds it the Mac cannot connect (and vice versa).
+/// QCY earbuds expose this on a separate LE identity ("<name>-APP") and accept a single LE controller,
+/// so while the phone app holds it the Mac cannot connect (and vice versa).
 @Observable
 final class ControlLink: NSObject {
     enum Phase: Equatable {
-        case starting
-        case bluetoothOff
-        case unauthorized
-        case searching
-        case connecting
-        case ready
-        case paused
+        case starting, bluetoothOff, unauthorized, searching, connecting, ready, paused
+    }
+
+    /// A QCY device seen in a scan.
+    struct Nearby: Identifiable, Equatable {
+        var id: UUID
+        var name: String
+        var advertisement: QCYAdvertisement
+        var model: ModelInfo?
+        var isSupported: Bool
+        var rssi: Int
+
+        static func == (a: Nearby, b: Nearby) -> Bool { a.id == b.id && a.rssi == b.rssi && a.name == b.name }
     }
 
     private(set) var phase: Phase = .starting
-    private(set) var settings = DeviceSettings()
-    private(set) var battery: BatteryStatus?
-    private(set) var firmware: FirmwareVersion?
-    private(set) var touchControls: [TouchGesture: TouchAction] = [:]
-    /// Set while LDAC / dual-device changes restart the earbuds.
+    private(set) var state = DeviceState()
+    private(set) var panel: ControlPanel?
+    private(set) var model: ModelInfo?
+    private(set) var advertisement: QCYAdvertisement?
+    private(set) var nearby: [Nearby] = []
+    /// Set while a change (LDAC, dual device, spatial EQ…) restarts the earbuds.
     private(set) var isRestarting = false
 
     var isReady: Bool { phase == .ready }
+    var family: ModelFamily? { vendorID.map(ModelFamily.init) }
+    var modelName: String { model?.name ?? "QCY Earbuds" }
 
+    /// Classic addresses paired with this Mac; a nearby device matching one is connected automatically.
+    @ObservationIgnored var pairedAudioAddresses: () -> [String] = { [] }
+
+    @ObservationIgnored let panels: PanelStore
     @ObservationIgnored private var central: CBCentralManager!
     @ObservationIgnored private var peripheral: CBPeripheral?
-    @ObservationIgnored private var characteristics: [CBUUID: CBCharacteristic] = [:]
+    @ObservationIgnored private var characteristics: [String: CBCharacteristic] = [:]
+    @ObservationIgnored private var vendorID: UInt16?
+    @ObservationIgnored private var refreshedFirmware: String?
     @ObservationIgnored private let outbox: AsyncStream<Packet>.Continuation
     @ObservationIgnored private var writer: Task<Void, Never>?
     @ObservationIgnored private var poller: Task<Void, Never>?
     @ObservationIgnored private let log = Logger(subsystem: "dev.melobuds.control", category: "ble")
 
     @ObservationIgnored
-    private var knownPeripheralID: UUID? {
-        get { UserDefaults.standard.string(forKey: "peripheralID").flatMap(UUID.init(uuidString:)) }
-        set { UserDefaults.standard.set(newValue?.uuidString, forKey: "peripheralID") }
+    private var known: (peripheral: UUID, vendor: UInt16)? {
+        get {
+            let d = UserDefaults.standard
+            guard let id = d.string(forKey: "peripheralID").flatMap(UUID.init(uuidString:)),
+                  let vendor = d.object(forKey: "vendorID") as? Int else { return nil }
+            return (id, UInt16(vendor))
+        }
+        set {
+            UserDefaults.standard.set(newValue?.peripheral.uuidString, forKey: "peripheralID")
+            UserDefaults.standard.set(newValue.map { Int($0.vendor) }, forKey: "vendorID")
+        }
     }
 
     private struct Packet: Sendable {
-        var characteristic: CBUUID
+        var characteristic: String
         var bytes: [UInt8]
     }
 
-    override init() {
+    init(panels: PanelStore) {
+        self.panels = panels
         let (stream, continuation) = AsyncStream.makeStream(of: Packet.self)
         outbox = continuation
         super.init()
@@ -78,125 +102,184 @@ final class ControlLink: NSObject {
         if let peripheral { central.cancelPeripheralConnection(peripheral) }
     }
 
+    /// Connects to a device picked from the nearby list.
+    func connect(to device: Nearby) {
+        guard device.isSupported,
+              let candidate = central.retrievePeripherals(withIdentifiers: [device.id]).first else { return }
+        if let peripheral, peripheral.identifier != candidate.identifier {
+            central.cancelPeripheralConnection(peripheral)
+        }
+        adopt(device.advertisement)
+        connect(candidate)
+    }
+
+    /// Forgets the current earbuds and looks for others.
+    func forget() {
+        known = nil
+        if let peripheral { central.cancelPeripheralConnection(peripheral) }
+        peripheral = nil
+        resetDevice()
+        phase = .searching
+        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+    }
+
     func refresh() {
         guard let peripheral, isReady else { return }
-        for uuid in [QCYGATT.settings, QCYGATT.battery, QCYGATT.version, QCYGATT.touchControls] {
-            if let characteristic = characteristics[CBUUID(string: uuid)] {
-                peripheral.readValue(for: characteristic)
+        // A read of 1002 returns most settings at once; the rest are requested one by one.
+        var reads = [QCYGATT.settings, QCYGATT.battery, QCYGATT.version, QCYGATT.touchControls]
+        if let eq = panel?.equalizer, eq.format == .legacy { reads.append(eq.characteristic) }
+        for group in panel?.touch?.groups ?? [] {
+            for control in group.controls { if case .characteristic(let c) = control.target { reads.append(c) } }
+        }
+        for item in panel?.settings ?? [] {
+            switch item {
+            case .toggle(let t) where t.stateCommand == nil: reads.append(t.characteristic)
+            case .choice(let c): if case .characteristic(let ch) = c.target { reads.append(ch) }
+            default: break
             }
         }
-        send(Command.request(.multiEQ2))
+        for uuid in Set(reads) {
+            if let c = characteristics[uuid], c.properties.contains(.read) { peripheral.readValue(for: c) }
+        }
+        for cmd in panel?.readCommands ?? [] {
+            send(Record(CommandID.request, [cmd]))
+        }
     }
 
     // MARK: Settings
 
-    func set(noiseControl value: NoiseControl) {
-        settings.noiseControl = value
-        send(Command.noiseControl(value))
+    func setNoise(_ value: Int) {
+        let record = NoiseValue.record(value)
+        state.apply(record)
+        send(record)
     }
 
-    func set(lowLatency on: Bool) {
-        settings.lowLatency = on
-        send(Command.toggle(.lowLatency, on))
+    func set(_ toggle: ToggleItem, on: Bool) {
+        if let cmd = toggle.stateCommand {
+            state.records[cmd] = [on ? 1 : 0]
+        } else {
+            state.characteristics[toggle.characteristic] = on ? toggle.on : toggle.off
+        }
+        if toggle.restartsEarbuds { expectRestart() }
+        enqueue(on ? toggle.on : toggle.off, to: toggle.characteristic)
     }
 
-    /// LDAC and dual-device connection are mutually exclusive; the earbuds restart to apply either.
-    func set(ldac on: Bool) {
-        settings.ldac = on
-        if on { settings.dualDevice = false }
-        expectRestart()
-        send(Command.toggle(.ldac, on))
-    }
-
-    func set(dualDevice on: Bool) {
-        settings.dualDevice = on
-        if on { settings.ldac = false }
-        expectRestart()
-        send(Command.toggle(.dualDevice, on))
-    }
-
-    func set(sleepMode on: Bool) {
-        settings.sleepMode = on
-        send(Command.toggle(.sleepMode, on))
-    }
-
-    func set(balance value: Int) {
-        settings.balance = value
-        send(Command.balance(value))
-    }
-
-    func set(beepVolume value: BeepVolume) {
-        settings.beepVolume = value
-        send(Command.beepVolume(value))
-    }
-
-    func set(promptLanguage value: PromptLanguage) {
-        settings.promptLanguage = value
-        send(Command.promptLanguage(value))
-    }
-
-    func set(autoPowerOff value: AutoPowerOff) {
-        settings.autoPowerOff = value
-        send(Command.autoPowerOff(value))
-    }
-
-    func set(wearDetection value: WearDetection) {
-        settings.wearDetection = value
-        send(Command.wearDetection(value))
+    func select(_ option: ChoiceOption, in choice: ChoiceItem) {
+        switch choice.target {
+        case .record(let cmd):
+            let record = Record(cmd, option.payload)
+            state.apply(record)
+            send(record)
+        case .characteristic(let c):
+            state.characteristics[c] = option.payload
+            enqueue(option.payload, to: c)
+        }
     }
 
     func apply(preset: EQPreset) {
-        if preset.warning != nil { settings.ldac = false; expectRestart() }
-        apply(equalizer: preset.configuration)
+        guard let eq = panel?.equalizer else { return }
+        if preset.warning != nil { expectRestart() }
+        perform(eq.command(for: preset, slots: eqSlots))
     }
 
     func apply(customGains gains: [Double]) {
-        apply(equalizer: GraphicEQ.configuration(gains: gains))
+        guard let eq = panel?.equalizer else { return }
+        perform(eq.customCommand(gains: gains, slots: eqSlots))
     }
 
-    private func apply(equalizer: EQConfiguration) {
-        settings.equalizer = equalizer
-        send(Command.equalizer(equalizer))
+    private func perform(_ command: EQCommand) {
+        switch command {
+        case .record(let record):
+            state.apply(record)
+            send(record)
+        case .characteristic(let c, let bytes):
+            state.characteristics[c] = bytes
+            enqueue(bytes, to: c)
+        }
     }
 
-    func set(_ action: TouchAction, for gesture: TouchGesture) {
-        touchControls[gesture] = action
-        enqueue(TouchControls.encode([gesture: action]), to: QCYGATT.touchControls)
+    func set(_ option: TouchOption, for control: TouchControl) {
+        switch control.target {
+        case .characteristic(let c):
+            state.characteristics[c] = option.value
+            enqueue(option.value, to: c)
+        case .event(let eventID):
+            var pairs = state.characteristics[QCYGATT.touchControls] ?? []
+            if let i = stride(from: 0, to: pairs.count - 1, by: 2).first(where: { pairs[$0] == eventID }) {
+                pairs[i + 1] = option.value[0]
+            } else {
+                pairs += [eventID, option.value[0]]
+            }
+            state.characteristics[QCYGATT.touchControls] = pairs
+            guard let family else { return }
+            if family.isZR {
+                // ZR firmware takes the whole map, with its own gesture numbering.
+                let wire = stride(from: 0, to: pairs.count - 1, by: 2).flatMap { [family.wireGesture(pairs[$0]), pairs[$0 + 1]] }
+                enqueue(wire, to: QCYGATT.touchControls)
+            } else {
+                var action = option.value[0]
+                if action == 0, family.sendsNoActionAsFF, firmwareAtLeast(1, 1, 0) { action = 0xFF }
+                enqueue([eventID, action], to: QCYGATT.touchControls)
+            }
+        }
+    }
+
+    func set(balance value: Int) {
+        let record = Command.balance(value)
+        state.apply(record)
+        send(record)
+    }
+
+    func set(wearDetection value: WearDetection) {
+        let record = Command.wearDetection(value)
+        state.apply(record)
+        send(record)
     }
 
     func rename(to name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        settings.deviceName = trimmed
-        send(Command.rename(trimmed))
+        let record = Command.rename(trimmed, maxLength: panel?.rename?.maxLength ?? 30)
+        state.apply(record)
+        send(record)
     }
 
-    func resetToDefaults() { send(Command.resetToDefaults) }
-    func factoryReset() { send(Command.factoryReset) }
+    func run(_ action: ActionItem) {
+        enqueue(action.bytes, to: action.characteristic)
+    }
 
     // MARK: Transport
 
-    private func send(_ records: Record...) {
-        enqueue(Frame.encode(records), to: QCYGATT.command)
+    private var eqSlots: Int {
+        EQConfiguration.slots(forWriteLength: peripheral?.maximumWriteValueLength(for: .withoutResponse) ?? 20)
+    }
+
+    private func send(_ record: Record) {
+        enqueue(Frame.encode(record), to: QCYGATT.command)
     }
 
     private func enqueue(_ bytes: [UInt8], to characteristic: String) {
-        outbox.yield(Packet(characteristic: CBUUID(string: characteristic), bytes: bytes))
+        outbox.yield(Packet(characteristic: characteristic, bytes: bytes))
     }
 
     private func transmit(_ packet: Packet) {
         guard let peripheral, let characteristic = characteristics[packet.characteristic] else {
-            log.notice("dropping \(packet.bytes.hex, privacy: .public): not connected")
+            log.notice("dropping \(packet.bytes.hex, privacy: .public) for \(packet.characteristic, privacy: .public): not available")
             return
         }
         let type: CBCharacteristicWriteType =
             characteristic.properties.contains(.writeWithoutResponse) ? .withoutResponse : .withResponse
         guard packet.bytes.count <= peripheral.maximumWriteValueLength(for: type) else {
-            log.error("frame of \(packet.bytes.count) bytes exceeds the negotiated MTU")
+            log.error("\(packet.bytes.count) bytes exceed the negotiated MTU")
             return
         }
-        log.debug("TX \(packet.characteristic.uuidString, privacy: .public) \(packet.bytes.hex, privacy: .public)")
+        log.debug("TX \(packet.characteristic, privacy: .public) \(packet.bytes.hex, privacy: .public)")
         peripheral.writeValue(Data(packet.bytes), for: characteristic, type: type)
+    }
+
+    private func firmwareAtLeast(_ major: Int, _ minor: Int, _ patch: Int) -> Bool {
+        guard let parts = state.firmware?.left.split(separator: ".").compactMap({ Int($0) }), parts.count == 3 else { return false }
+        return (parts[0], parts[1], parts[2]) >= (major, minor, patch)
     }
 
     private func expectRestart() {
@@ -207,18 +290,33 @@ final class ControlLink: NSObject {
         }
     }
 
+    // MARK: Discovery
+
     private func startDiscovery() {
         guard central.state == .poweredOn, phase != .paused else { return }
-        if let id = knownPeripheralID, let known = central.retrievePeripherals(withIdentifiers: [id]).first {
-            connect(known)
-        }
-        for candidate in central.retrieveConnectedPeripherals(withServices: [CBUUID(string: QCYGATT.service)])
-        where candidate.name?.localizedCaseInsensitiveContains("MeloBuds") == true {
-            connect(candidate)
-            return
+        if let known, let peripheral = central.retrievePeripherals(withIdentifiers: [known.peripheral]).first {
+            vendorID = known.vendor
+            connect(peripheral)
         }
         // A001 is not in the advertisement, so scan everything and match QCY manufacturer data.
-        central.scanForPeripherals(withServices: nil)
+        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+    }
+
+    private func adopt(_ ad: QCYAdvertisement) {
+        advertisement = ad
+        if vendorID != ad.vendorID { resetDevice() }
+        vendorID = ad.vendorID
+        model = panels.model(ad.vendorID)
+        panel = panels.panel(for: ad.vendorID)
+        if state.battery == nil { state.battery = ad.battery }
+    }
+
+    private func resetDevice() {
+        state = DeviceState()
+        panel = nil
+        model = nil
+        advertisement = nil
+        refreshedFirmware = nil
     }
 
     private func connect(_ candidate: CBPeripheral) {
@@ -229,38 +327,56 @@ final class ControlLink: NSObject {
         central.connect(candidate)
     }
 
-    private func didBecomeReady(_ peripheral: CBPeripheral) {
+    private func didBecomeReady() {
+        if let vendorID {
+            if model == nil { model = panels.model(vendorID) }
+            if panel == nil { panel = panels.panel(for: vendorID) }
+        }
         phase = .ready
         isRestarting = false
+        central.stopScan()
+        nearby = []
         refresh()
         poller?.cancel()
         // Battery notifies on change, but a slow poll keeps the case level fresh like the phone app does.
         poller = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))
-                guard let self, let c = self.characteristics[CBUUID(string: QCYGATT.battery)] else { continue }
+                guard let self, let c = self.characteristics[QCYGATT.battery] else { continue }
                 self.peripheral?.readValue(for: c)
             }
         }
     }
 
-    private func handle(_ value: [UInt8], from characteristic: CBUUID) {
-        log.debug("RX \(characteristic.uuidString, privacy: .public) \(value.hex, privacy: .public)")
-        switch characteristic.uuidString {
+    /// Once the firmware is known, fetch the settings list QCY serves for it (as the phone app does).
+    private func refreshPanel(firmware: FirmwareVersion) {
+        guard let vendorID, refreshedFirmware != firmware.left else { return }
+        refreshedFirmware = firmware.left
+        Task {
+            guard let fresh = await panels.refresh(vendorID: vendorID, firmware: firmware.left),
+                  self.vendorID == vendorID else { return }
+            panel = fresh
+            refresh()
+        }
+    }
+
+    private func handle(_ value: [UInt8], from uuid: String) {
+        log.debug("RX \(uuid, privacy: .public) \(value.hex, privacy: .public)")
+        switch uuid {
         case QCYGATT.settings:
-            do {
-                for record in try Frame.decode(value) { settings.apply(record) }
-            } catch {
-                log.error("bad frame \(value.hex): \(String(describing: error))")
+            do { try state.apply(frame: value) } catch {
+                log.error("bad frame \(value.hex, privacy: .public): \(String(describing: error), privacy: .public)")
             }
         case QCYGATT.battery:
-            battery = BatteryStatus(bytes: value) ?? battery
+            state.battery = BatteryStatus(bytes: value) ?? state.battery
         case QCYGATT.version:
-            firmware = FirmwareVersion(bytes: value)
-        case QCYGATT.touchControls:
-            touchControls = TouchControls.decode(value)
+            state.firmware = FirmwareVersion(bytes: value)
+            if let firmware = state.firmware { refreshPanel(firmware: firmware) }
+        case QCYGATT.touchControls where family?.isZR == true:
+            let f = family!
+            state.characteristics[uuid] = stride(from: 0, to: value.count - 1, by: 2).flatMap { [f.appGesture(value[$0]), value[$0 + 1]] }
         default:
-            break
+            state.characteristics[uuid] = value
         }
     }
 }
@@ -276,7 +392,6 @@ extension ControlLink: @MainActor CBCentralManagerDelegate {
                 startDiscovery()
             }
         case .unauthorized: phase = .unauthorized
-        case .poweredOff, .resetting: phase = .bluetoothOff
         default: phase = .bluetoothOff
         }
     }
@@ -284,38 +399,46 @@ extension ControlLink: @MainActor CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                         advertisementData: [String: Any], rssi RSSI: NSNumber) {
         guard let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-              let ad = QCYAdvertisement(manufacturerData: data),
-              ad.vendorID == QCYAdvertisement.meloBudsPro else { return }
-        if battery == nil { battery = ad.battery }
-        central.stopScan()
-        knownPeripheralID = peripheral.identifier
+              let ad = QCYAdvertisement(manufacturerData: data) else { return }
+        let info = panels.model(ad.vendorID)
+        let name = info?.name ?? peripheral.name?.replacingOccurrences(of: "-APP", with: "") ?? "QCY device"
+        let device = Nearby(id: peripheral.identifier, name: name, advertisement: ad, model: info,
+                            isSupported: panels.isSupported(ad.vendorID), rssi: RSSI.intValue)
+        if let i = nearby.firstIndex(where: { $0.id == device.id }) { nearby[i] = device } else { nearby.append(device) }
+
+        guard phase == .searching || phase == .starting, device.isSupported else { return }
+        // Connect automatically only to earbuds this Mac knows: the last ones used, or ones paired for audio.
+        let isKnown = known?.peripheral == peripheral.identifier
+        let isPaired = pairedAudioAddresses().contains { ad.matchesClassicAddress($0) }
+        guard isKnown || isPaired else { return }
+        adopt(ad)
         connect(peripheral)
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         log.info("connected to \(peripheral.identifier)")
-        knownPeripheralID = peripheral.identifier
+        if let vendorID { known = (peripheral.identifier, vendorID) }
         peripheral.discoverServices([CBUUID(string: QCYGATT.service)])
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: (any Error)?) {
-        log.error("connect failed: \(error?.localizedDescription ?? "unknown")")
+        log.error("connect failed: \(error?.localizedDescription ?? "unknown", privacy: .public)")
         guard phase != .paused else { return }
         phase = .searching
-        central.scanForPeripherals(withServices: nil)
+        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral,
                         error: (any Error)?) {
-        log.info("disconnected: \(error?.localizedDescription ?? "requested")")
+        log.info("disconnected: \(error?.localizedDescription ?? "requested", privacy: .public)")
         characteristics = [:]
         poller?.cancel()
-        guard phase != .paused else { return }
+        guard phase != .paused, self.peripheral?.identifier == peripheral.identifier else { return }
         phase = .searching
-        // A pending connect completes as soon as the earbuds advertise again (e.g. after a restart
-        // or when the phone releases them).
+        // A pending connect completes as soon as the earbuds advertise again (after a restart, or
+        // when the phone releases them).
         central.connect(peripheral)
-        central.scanForPeripherals(withServices: nil)
+        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
     }
 }
 
@@ -331,19 +454,17 @@ extension ControlLink: @MainActor CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService,
                     error: (any Error)?) {
         for characteristic in service.characteristics ?? [] {
-            characteristics[characteristic.uuid] = characteristic
+            characteristics[characteristic.uuid.uuidString] = characteristic
             if characteristic.properties.contains(.notify) {
                 peripheral.setNotifyValue(true, for: characteristic)
             }
         }
-        if characteristics[CBUUID(string: QCYGATT.command)] != nil {
-            didBecomeReady(peripheral)
-        }
+        didBecomeReady()
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic,
                     error: (any Error)?) {
         guard error == nil, let value = characteristic.value else { return }
-        handle(Array(value), from: characteristic.uuid)
+        handle(Array(value), from: characteristic.uuid.uuidString)
     }
 }

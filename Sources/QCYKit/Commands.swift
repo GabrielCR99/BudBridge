@@ -1,6 +1,6 @@
 import Foundation
 
-/// GATT layout of the QCY control service (observed on MeloBuds Pro, firmware 2.0.6).
+/// GATT layout of the QCY control service (shared by every non-JieLi model; observed on MeloBuds Pro 2.0.6).
 public enum QCYGATT {
     public static let service = "A001"
     /// Write-without-response: command frames.
@@ -67,36 +67,20 @@ public enum Command {
         Record(id, [on ? 1 : 2])
     }
 
-    public static func noiseControl(_ value: NoiseControl) -> Record {
-        Record(.ancSetting, value.bytes)
+    public static func noiseControl(_ value: Int) -> Record {
+        NoiseValue.record(value)
     }
 
     public static func balance(_ value: Int) -> Record {
         Record(.balance, [UInt8(clamping: min(max(value, 0), 100))])
     }
 
-    public static func beepVolume(_ value: BeepVolume) -> Record {
-        Record(.beepVolume, [value.rawValue])
-    }
-
-    public static func promptLanguage(_ value: PromptLanguage) -> Record {
-        Record(.promptLanguage, Array(value.rawValue.utf8))
-    }
-
-    public static func autoPowerOff(_ value: AutoPowerOff) -> Record {
-        Record(.standby, [UInt8(value.rawValue & 0xFF), UInt8(value.rawValue >> 8)])
-    }
-
     public static func wearDetection(_ value: WearDetection) -> Record {
-        Record(.wearDetection, [value.isEnabled ? 1 : 0, value.music.rawValue, value.followsANC ? 1 : 0])
+        Record(.wearDetection, value.bytes)
     }
 
-    public static func equalizer(_ value: EQConfiguration) -> Record {
-        Record(.multiEQ2, value.encoded())
-    }
-
-    public static func rename(_ name: String) -> Record {
-        Record(.pairName, Array(name.utf8.prefix(30)))
+    public static func rename(_ name: String, maxLength: Int = 30) -> Record {
+        Record(.pairName, Array(name.utf8.prefix(maxLength)))
     }
 
     public static var resetToDefaults: Record { Record(.resetDefaults) }

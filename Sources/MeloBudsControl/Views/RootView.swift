@@ -1,7 +1,8 @@
+import QCYKit
 import SwiftUI
 
 enum Page: String, CaseIterable, Identifiable {
-    case overview, noise, sound, controls, connectivity, device
+    case overview, noise, sound, controls, settings, connections
 
     var id: Self { self }
 
@@ -9,10 +10,10 @@ enum Page: String, CaseIterable, Identifiable {
         switch self {
         case .overview: "Overview"
         case .noise: "Noise Control"
-        case .sound: "Sound Effects"
+        case .sound: "Sound"
         case .controls: "Touch Controls"
-        case .connectivity: "Connectivity"
-        case .device: "Device"
+        case .settings: "Settings"
+        case .connections: "Connections"
         }
     }
 
@@ -22,43 +23,58 @@ enum Page: String, CaseIterable, Identifiable {
         case .noise: "waveform.circle"
         case .sound: "slider.vertical.3"
         case .controls: "hand.tap"
-        case .connectivity: "antenna.radiowaves.left.and.right"
-        case .device: "gearshape"
+        case .settings: "gearshape"
+        case .connections: "antenna.radiowaves.left.and.right"
+        }
+    }
+
+    /// Pages appear only when the connected model's settings list has something for them.
+    func isAvailable(for panel: ControlPanel?) -> Bool {
+        switch self {
+        case .overview, .connections: true
+        case .noise: panel?.noiseControl != nil
+        case .sound: panel?.equalizer != nil || panel?.balance != nil
+        case .controls: panel?.touch != nil
+        case .settings: panel != nil
         }
     }
 }
 
 struct RootView: View {
     @Environment(Headphones.self) private var headphones
-    @SceneStorage("section") private var selection: Page = .overview
+    @SceneStorage("page") private var selection: Page = .overview
 
     var body: some View {
+        let control = headphones.control
+        let pages = Page.allCases.filter { $0.isAvailable(for: control.panel) }
         NavigationSplitView {
-            List(Page.allCases, selection: $selection) { section in
-                Label(section.title, systemImage: section.symbol)
-                    .tag(section)
+            List(pages, selection: $selection) { page in
+                Label(page.title, systemImage: page.symbol)
+                    .tag(page)
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
         } detail: {
-            detail
-                .navigationTitle(selection.title)
+            detail(pages.contains(selection) ? selection : .overview)
+                .navigationTitle(control.isReady ? control.modelName : "QCY Earbuds")
+                .navigationSubtitle(selection.title)
                 .toolbar {
                     ToolbarItem(placement: .status) {
-                        LinkStatusBadge(control: headphones.control)
+                        LinkStatusBadge(control: control)
                     }
                 }
         }
+        .onChange(of: control.advertisement) { _, ad in headphones.audio.focus(on: ad) }
     }
 
-    @ViewBuilder private var detail: some View {
+    @ViewBuilder private func detail(_ page: Page) -> some View {
         let control = headphones.control
-        switch selection {
+        switch page {
         case .overview: OverviewView()
         case .noise: RequiresControl(control: control) { NoiseControlView(control: control) }
         case .sound: RequiresControl(control: control) { SoundView(control: control) }
         case .controls: RequiresControl(control: control) { TouchControlsView(control: control) }
-        case .connectivity: ConnectivityView()
-        case .device: RequiresControl(control: control) { DeviceView() }
+        case .settings: RequiresControl(control: control) { SettingsView() }
+        case .connections: ConnectionsView()
         }
     }
 }
@@ -89,7 +105,7 @@ struct ControlUnavailableView: View {
             ContentUnavailableView {
                 Label("Bluetooth Access Needed", systemImage: "lock.shield")
             } description: {
-                Text("Allow MeloBuds Control in System Settings › Privacy & Security › Bluetooth.")
+                Text("Allow this app in System Settings › Privacy & Security › Bluetooth.")
             } actions: {
                 Button("Open Privacy Settings") {
                     NSWorkspace.shared.open(URL(string:
@@ -106,49 +122,22 @@ struct ControlUnavailableView: View {
                     .buttonStyle(.glassProminent)
             }
         case .starting, .searching, .connecting, .ready:
-            ContentUnavailableView {
-                Label(control.phase == .connecting ? "Connecting…" : "Looking for MeloBuds Pro…",
-                      systemImage: "earbuds")
-                    .symbolEffect(.pulse)
-            } description: {
-                Text("Take the earbuds out of the case. If the QCY app on your phone is open, close it — the earbuds accept only one controller at a time.")
+            VStack(spacing: 20) {
+                ContentUnavailableView {
+                    Label(control.phase == .connecting ? "Connecting…" : "Looking for QCY Earbuds…",
+                          systemImage: "earbuds")
+                        .symbolEffect(.pulse)
+                } description: {
+                    Text("Earbuds paired with this Mac connect automatically. Close the QCY app on your phone if it's open: the earbuds accept only one controller at a time.")
+                }
+                if !control.nearby.isEmpty {
+                    Form {
+                        Section("Nearby") { NearbyDevicesList(control: control) }
+                    }
+                    .formStyle(.grouped)
+                    .frame(maxWidth: 520, maxHeight: 280)
+                }
             }
-        }
-    }
-}
-
-struct LinkStatusBadge: View {
-    let control: ControlLink
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(text)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 8)
-    }
-
-    private var color: Color {
-        switch control.phase {
-        case .ready: control.isRestarting ? .orange : .green
-        case .searching, .connecting, .starting: .yellow
-        case .paused: .gray
-        case .bluetoothOff, .unauthorized: .red
-        }
-    }
-
-    private var text: String {
-        switch control.phase {
-        case .ready: control.isRestarting ? "Restarting…" : "Connected"
-        case .searching, .starting: "Searching"
-        case .connecting: "Connecting"
-        case .paused: "Released"
-        case .bluetoothOff: "Bluetooth off"
-        case .unauthorized: "No permission"
         }
     }
 }

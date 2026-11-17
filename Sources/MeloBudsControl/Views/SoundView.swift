@@ -4,55 +4,70 @@ import SwiftUI
 struct SoundView: View {
     let control: ControlLink
 
-    @State private var gains = Array(repeating: 0.0, count: GraphicEQ.frequencies.count)
+    @State private var gains: [Double] = []
     @State private var pendingPreset: EQPreset?
 
-    private var activeID: UInt8? { control.settings.equalizer?.id }
-
     var body: some View {
+        let eq = control.panel?.equalizer
+        let selection = eq?.selection(in: control.state)
         Form {
-            Section("Presets") {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
-                    ForEach(EQPreset.all) { preset in
-                        PresetButton(title: preset.name, isSelected: activeID == preset.id) {
-                            if preset.warning != nil { pendingPreset = preset } else { control.apply(preset: preset) }
+            if let eq {
+                if control.family?.isZR == true {
+                    Section(eq.title) {
+                        Text("The equalizer isn't supported for this model yet.")
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Section(eq.title) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
+                            ForEach(eq.presets) { preset in
+                                PresetButton(title: preset.name, isSelected: selection?.id == preset.id) {
+                                    if preset.warning != nil { pendingPreset = preset } else { control.apply(preset: preset) }
+                                }
+                            }
+                            if !eq.bands.isEmpty {
+                                PresetButton(title: "Custom", isSelected: (selection?.id ?? 0) >= EQConfiguration.customID) {
+                                    control.apply(customGains: gains)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    if !eq.bands.isEmpty {
+                        Section {
+                            GraphicEQEditor(gains: $gains, labels: eq.bands.bandLabels, range: eq.gainRange) {
+                                control.apply(customGains: gains)
+                            }
+                            .frame(height: 220)
+                            HStack {
+                                Button("Flat") {
+                                    gains = Array(repeating: 0, count: eq.bands.count)
+                                    control.apply(customGains: gains)
+                                }
+                                Spacer()
+                                Text("Changes apply when you release a slider.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } header: {
+                            Text("Custom Equalizer")
+                        } footer: {
+                            if let tip = eq.rebootTip { Text(tip) }
                         }
                     }
-                    PresetButton(title: "Custom", isSelected: control.settings.equalizer?.isCustom == true) {
-                        control.apply(customGains: gains)
-                    }
                 }
-                .padding(.vertical, 4)
             }
 
-            Section {
-                GraphicEQEditor(gains: $gains) {
-                    control.apply(customGains: gains)
+            if let balance = control.panel?.balance {
+                Section(balance) {
+                    BalanceSlider(control: control)
                 }
-                .frame(height: 220)
-                HStack {
-                    Button("Flat") {
-                        gains = Array(repeating: 0, count: gains.count)
-                        control.apply(customGains: gains)
-                    }
-                    Spacer()
-                    Text("Changes apply when you release a slider.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } header: {
-                Text("Custom Equalizer")
-            } footer: {
-                Text("Your curve is layered on the MeloBuds Pro base tuning, like in the QCY app.")
-            }
-
-            Section("Channel Balance") {
-                BalanceSlider(control: control)
             }
         }
         .formStyle(.grouped)
-        .onAppear(perform: loadGains)
-        .onChange(of: control.settings.equalizer) { loadGains() }
+        .onAppear { loadGains(selection?.gains, bands: eq?.bands.count ?? 0) }
+        .onChange(of: selection?.gains) { _, new in loadGains(new, bands: eq?.bands.count ?? 0) }
         .confirmationDialog(
             "Use \(pendingPreset?.name ?? "")?",
             isPresented: Binding(get: { pendingPreset != nil }, set: { if !$0 { pendingPreset = nil } }),
@@ -64,8 +79,12 @@ struct SoundView: View {
         }
     }
 
-    private func loadGains() {
-        if let stored = control.settings.equalizer?.graphicGains { gains = stored }
+    private func loadGains(_ stored: [Double]?, bands: Int) {
+        if let stored, stored.count == bands {
+            gains = stored
+        } else if gains.count != bands {
+            gains = Array(repeating: 0, count: bands)
+        }
     }
 }
 
@@ -97,16 +116,18 @@ private struct AnyButtonStyle: PrimitiveButtonStyle {
 
 struct GraphicEQEditor: View {
     @Binding var gains: [Double]
+    let labels: [String]
+    let range: ClosedRange<Double>
     var commit: () -> Void
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
             VStack {
-                Text("+8").font(.caption2)
+                Text("+\(Int(range.upperBound))").font(.caption2)
                 Spacer()
                 Text("0").font(.caption2)
                 Spacer()
-                Text("−8").font(.caption2)
+                Text("−\(Int(-range.lowerBound))").font(.caption2)
             }
             .foregroundStyle(.secondary)
             .padding(.bottom, 34)
@@ -116,10 +137,10 @@ struct GraphicEQEditor: View {
                     Text(gains[index], format: .number.precision(.fractionLength(0)).sign(strategy: .always(includingZero: false)))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
-                    VerticalSlider(value: $gains[index], range: GraphicEQ.gainRange) { editing in
+                    VerticalSlider(value: $gains[index], range: range) { editing in
                         if !editing { commit() }
                     }
-                    Text(GraphicEQ.label(for: GraphicEQ.frequencies[index]))
+                    Text(index < labels.count ? labels[index] : "")
                         .font(.caption2.monospacedDigit())
                 }
                 .frame(maxWidth: .infinity)
@@ -161,7 +182,7 @@ struct BalanceSlider: View {
             }
             .disabled(Int(value) == 50)
         }
-        .onAppear { value = Double(control.settings.balance ?? 50) }
-        .onChange(of: control.settings.balance) { _, new in value = Double(new ?? 50) }
+        .onAppear { value = Double(control.state.balance ?? 50) }
+        .onChange(of: control.state.balance) { _, new in value = Double(new ?? 50) }
     }
 }
