@@ -37,6 +37,7 @@ final class ControlLink: NSObject {
 
     var isReady: Bool { phase == .ready }
     var family: ModelFamily? { vendorID.map(ModelFamily.init) }
+    var modelID: UInt16? { vendorID }
     var modelName: String { model?.name ?? "QCY Earbuds" }
 
     /// Classic addresses paired with this Mac; a nearby device matching one is connected automatically.
@@ -185,6 +186,11 @@ final class ControlLink: NSObject {
     func apply(customGains gains: [Double]) {
         guard let eq = panel?.equalizer else { return }
         perform(eq.customCommand(gains: gains, slots: eqSlots))
+    }
+
+    /// Re-sends a saved curve exactly as it was captured.
+    func apply(effect: SoundEffect) {
+        perform(effect.command)
     }
 
     private func perform(_ command: EQCommand) {

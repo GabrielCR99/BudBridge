@@ -257,6 +257,18 @@ public struct EqualizerPanel: Sendable {
         }
     }
 
+    /// The active curve exactly as the earbuds reported it, ready to be sent back later.
+    /// Effects named in the phone app live only on the phone; this is how they can be captured.
+    public func activeCommand(in state: DeviceState) -> EQCommand? {
+        switch format {
+        case .legacy:
+            return state.characteristics[characteristic].map { .characteristic(characteristic, $0) }
+        case .parametric(let typed):
+            let cmd = typed ? CommandID.multiEQ2.rawValue : CommandID.multiEQ.rawValue
+            return state.records[cmd].map { .record(Record(cmd, $0)) }
+        }
+    }
+
     /// The active preset ID and, for custom curves, the band gains.
     public func selection(in state: DeviceState) -> (id: UInt8, gains: [Double]?)? {
         switch format {

@@ -5,6 +5,7 @@ final class Headphones {
     let control: ControlLink
     let audio = AudioLink()
     let finder = FindTone()
+    let effects = EffectStore()
 
     init() {
         control = ControlLink(panels: PanelStore())

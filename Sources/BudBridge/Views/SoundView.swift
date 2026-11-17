@@ -4,12 +4,31 @@ import SwiftUI
 struct SoundView: View {
     let control: ControlLink
 
+    @Environment(Headphones.self) private var headphones
     @State private var gains: [Double] = []
     @State private var pendingPreset: EQPreset?
+    @State private var naming: Naming?
+    @State private var nameDraft = ""
+
+    /// What the name prompt is for: saving the active curve, or renaming a saved effect.
+    private enum Naming: Identifiable {
+        case save(EQCommand)
+        case rename(SoundEffect)
+        var id: String {
+            switch self {
+            case .save: "save"
+            case .rename(let e): e.id.uuidString
+            }
+        }
+    }
 
     var body: some View {
         let eq = control.panel?.equalizer
         let selection = eq?.selection(in: control.state)
+        let active = eq?.activeCommand(in: control.state)
+        let saved = headphones.effects.effects(for: control.modelID)
+        let activeEffect = headphones.effects.effect(matching: active, modelID: control.modelID)
+        let isCustom = (selection?.id ?? 0) >= EQConfiguration.customID
         Form {
             if let eq {
                 if control.family?.isZR == true {
@@ -26,12 +45,46 @@ struct SoundView: View {
                                 }
                             }
                             if !eq.bands.isEmpty {
-                                PresetButton(title: "Custom", isSelected: (selection?.id ?? 0) >= EQConfiguration.customID) {
+                                PresetButton(title: "Custom", isSelected: isCustom && activeEffect == nil) {
                                     control.apply(customGains: gains)
                                 }
                             }
                         }
                         .padding(.vertical, 4)
+                    }
+
+                    Section {
+                        ForEach(saved) { effect in
+                            HStack {
+                                Text(effect.name)
+                                Spacer()
+                                if effect == activeEffect {
+                                    Image(systemName: "checkmark").foregroundStyle(.tint)
+                                } else {
+                                    Button("Apply") { control.apply(effect: effect) }
+                                }
+                            }
+                            .contextMenu {
+                                Button("Rename…") { nameDraft = effect.name; naming = .rename(effect) }
+                                Button("Delete", role: .destructive) { headphones.effects.delete(effect) }
+                            }
+                        }
+                        if isCustom, activeEffect == nil, let active {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("Custom curve on the earbuds")
+                                    Text("Not saved on this Mac yet").font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button("Save As…") { nameDraft = ""; naming = .save(active) }
+                            }
+                        } else if saved.isEmpty {
+                            Text("No saved effects yet.").foregroundStyle(.secondary)
+                        }
+                    } header: {
+                        Text("My Sound Effects")
+                    } footer: {
+                        Text("Effects you create in the QCY phone app are stored on the phone, not the earbuds. To bring one over, select it in the phone app, tap Take Control here, then use Save As. Right-click a saved effect to rename or delete it.")
                     }
 
                     if !eq.bands.isEmpty {
@@ -68,6 +121,12 @@ struct SoundView: View {
         .formStyle(.grouped)
         .onAppear { loadGains(selection?.gains, bands: eq?.bands.count ?? 0) }
         .onChange(of: selection?.gains) { _, new in loadGains(new, bands: eq?.bands.count ?? 0) }
+        .alert(namingTitle, isPresented: Binding(get: { naming != nil }, set: { if !$0 { naming = nil } })) {
+            TextField("Name", text: $nameDraft)
+            Button("Save") { commitName() }
+                .disabled(nameDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button("Cancel", role: .cancel) {}
+        }
         .confirmationDialog(
             "Use \(pendingPreset?.name ?? "")?",
             isPresented: Binding(get: { pendingPreset != nil }, set: { if !$0 { pendingPreset = nil } }),
@@ -77,6 +136,22 @@ struct SoundView: View {
         } message: { preset in
             Text(preset.warning ?? "")
         }
+    }
+
+    private var namingTitle: String {
+        if case .rename = naming { "Rename Sound Effect" } else { "Save Sound Effect" }
+    }
+
+    private func commitName() {
+        switch naming {
+        case .save(let command):
+            if let modelID = control.modelID { headphones.effects.save(command, name: nameDraft, modelID: modelID) }
+        case .rename(let effect):
+            headphones.effects.rename(effect, to: nameDraft)
+        case nil:
+            break
+        }
+        naming = nil
     }
 
     private func loadGains(_ stored: [Double]?, bands: Int) {

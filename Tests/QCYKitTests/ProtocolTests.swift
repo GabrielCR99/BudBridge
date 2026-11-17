@@ -105,6 +105,17 @@ struct MeloBudsPanelTests {
         let selection = try #require(panel.equalizer?.selection(in: state))
         #expect(selection.id == 0x81)
         #expect(selection.gains == [3, 2, 0, -1, -1, 0, 1, 2, 5, 3])
+
+        // Saving it captures the exact bytes, hidden tuning filters included.
+        guard case .record(let record) = panel.equalizer?.activeCommand(in: state) else { Issue.record("expected a record"); return }
+        #expect(Frame.encode(record) == frame)
+    }
+
+    @Test func legacyActiveCurveIsCapturedAsIs() throws {
+        let eq = try #require(try Panels.load(19745).equalizer)
+        var state = DeviceState()
+        state.characteristics["000B"] = [0x80, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0xFE]
+        #expect(eq.activeCommand(in: state) == .characteristic("000B", [0x80, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0xFE]))
     }
 
     @Test func settingsCarryTheirOwnBytes() throws {
