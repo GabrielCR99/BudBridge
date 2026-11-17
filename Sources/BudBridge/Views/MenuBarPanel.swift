@@ -12,9 +12,13 @@ struct MenuBarPanel: View {
         let battery = control.state.battery
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(control.isReady ? control.modelName : "BudBridge").font(.headline)
-                Spacer()
+                Text(control.isReady ? control.modelName : "BudBridge")
+                    .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Spacer(minLength: 8)
                 LinkStatusBadge(control: control)
+                    .fixedSize()
             }
 
             HStack(spacing: 18) {
@@ -26,10 +30,11 @@ struct MenuBarPanel: View {
 
             if control.isReady {
                 if let noise = control.panel?.noiseControl {
-                    NoiseModePicker(control: control, panel: noise)
+                    NoiseModeTiles(control: control, panel: noise)
                 }
                 if let gaming = gamingToggle {
                     PanelToggle(control: control, item: gaming, pending: $pending)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else if control.phase == .paused {
                 Button("Take Control from Phone") { control.resume() }
@@ -39,27 +44,46 @@ struct MenuBarPanel: View {
 
             Divider()
 
-            HStack {
-                if audio.isPaired {
-                    Button(audio.isConnected ? "Disconnect Audio" : "Connect Audio") {
-                        audio.isConnected ? audio.disconnect() : audio.connect()
-                    }
-                    .disabled(audio.isBusy)
-                } else {
-                    Button("Pair…") { audio.openBluetoothSettings() }
+            // Side by side when they fit; stacked when translations are long.
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    audioButton
+                    Spacer(minLength: 8)
+                    openButton
                 }
-                Spacer()
-                Button("Open Controls") {
-                    openWindow(id: "main")
-                    NSApp.activate()
+                VStack(alignment: .leading, spacing: 8) {
+                    audioButton
+                    openButton
                 }
-                .buttonStyle(.glassProminent)
             }
         }
         .padding(16)
         .frame(width: 320)
         .restartConfirmation($pending, control: control)
         .onAppear { audio.refresh() }
+    }
+
+    @ViewBuilder private var audioButton: some View {
+        let audio = headphones.audio
+        if audio.isPaired {
+            Button(audio.isConnected ? "Disconnect Audio" : "Connect Audio") {
+                audio.isConnected ? audio.disconnect() : audio.connect()
+            }
+            .disabled(audio.isBusy)
+            .fixedSize()
+        } else {
+            Button("Pair…") { audio.openBluetoothSettings() }
+                .fixedSize()
+        }
+    }
+
+    private var openButton: some View {
+        Button("Open Controls") {
+            openWindow(id: "main")
+            NSApp.activate()
+        }
+        .buttonStyle(.glassProminent)
+        .fixedSize()
     }
 
     private var gamingToggle: ToggleItem? {
@@ -81,6 +105,40 @@ private struct MiniBattery: View {
             HStack(spacing: 2) {
                 if level?.isCharging == true { Image(systemName: "bolt.fill").foregroundStyle(.yellow) }
                 Text(title).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+/// Noise modes as equal-width tiles whose labels wrap, so long names (e.g. "Cancelamento de ruídos")
+/// never widen the panel, and selecting a mode changes only its colour, not its size.
+private struct NoiseModeTiles: View {
+    let control: ControlLink
+    let panel: NoiseControlPanel
+
+    var body: some View {
+        let current = NoiseValue.value(in: control.state).flatMap(panel.mode(for:))
+        HStack(spacing: 6) {
+            ForEach(panel.modes) { mode in
+                let isSelected = mode.id == current?.id
+                Button {
+                    if !isSelected { control.setNoise(mode.defaultValue) }
+                } label: {
+                    Text(mode.name)
+                        .font(.callout.weight(.medium))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 6)
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15),
+                                    in: .rect(cornerRadius: 10))
+                        .contentShape(.rect(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }
