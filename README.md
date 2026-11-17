@@ -1,6 +1,6 @@
-# MeloBuds Control
+# BudBridge
 
-A native macOS app for **QCY earbuds**, built and tested with the MeloBuds Pro. Like the official QCY
+**An unofficial macOS app for QCY earbuds.** Built and tested with the QCY MeloBuds Pro. Like the official QCY
 phone app, it builds its screens from each model's settings list ("control panel"), so it supports
 **101 QCY models** that use the same Bluetooth LE protocol, plus the Mac's own audio connection.
 
@@ -15,7 +15,7 @@ phone app, it builds its screens from each model's settings list ("control panel
 Earbuds paired with this Mac connect automatically; other QCY earbuds nearby are listed under
 **Connections**, where unsupported models say why.
 
-> **New to the code?** Open [`docs/melobuds-control.html`](docs/melobuds-control.html) in a browser: an interactive walkthrough of the protocol and the Swift code, with Dart/Flutter comparisons.
+> **New to the code?** Open [`docs/budbridge.html`](docs/budbridge.html) in a browser: an interactive walkthrough of the protocol and the Swift code, with Dart/Flutter comparisons.
 
 Requires macOS 26+ and Swift 6.2+. Built with Swift 6 language mode, main-actor default
 isolation, `@Observable`, isolated protocol conformances, typed throws and Swift Testing.
@@ -23,8 +23,8 @@ isolation, `@Observable`, isolated protocol conformances, typed throws and Swift
 ## Build
 
 ```sh
-./scripts/build-app.sh          # → build/MeloBuds Control.app (ad-hoc signed)
-open "build/MeloBuds Control.app"
+./scripts/build-app.sh          # → build/BudBridge.app (ad-hoc signed)
+open build/BudBridge.app
 swift test                      # protocol tests against bytes captured from real earbuds
 swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns (vector-drawn, no assets)
 ```
@@ -46,7 +46,7 @@ System Settings › Bluetooth.
   the 9 "ZR" models. Only the MeloBuds Pro has been tested on real hardware.
 - **Settings lists.** The app ships a snapshot of QCY's lists and, after connecting, fetches the one for
   the earbuds' firmware from `api.watch.qcy.com` (as the phone app does), cached in
-  `~/Library/Application Support/MeloBudsControl/Panels`.
+  `~/Library/Application Support/BudBridge/Panels`.
 
 ## Protocol (reverse-engineered from `com.qcymall.googleearphonesetup` 4.0.7)
 
@@ -82,3 +82,9 @@ are written as `1` = on, `2` = off and read back as `1` and `0`.
 
 EQ presets and option labels come from the model's control panel
 (`api.watch.qcy.com/product/findControlPanels`, `modelId=19786` = advertised vendor ID `0x4D4A`).
+
+## Disclaimer
+
+BudBridge is an independent project. It is not affiliated with, endorsed by, or sponsored by QCY.
+"QCY" and "MeloBuds" are trademarks of their owner and are used here only to describe compatibility.
+The protocol was worked out from the official Android app and the author's own earbuds, for interoperability.

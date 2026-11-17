@@ -55,7 +55,7 @@ struct RootView: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
         } detail: {
             detail(pages.contains(selection) ? selection : .overview)
-                .navigationTitle(control.isReady ? control.modelName : "QCY Earbuds")
+                .navigationTitle(control.isReady ? control.modelName : "BudBridge")
                 .navigationSubtitle(selection.title)
                 .toolbar {
                     ToolbarItem(placement: .status) {

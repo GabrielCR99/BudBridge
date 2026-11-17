@@ -12,7 +12,7 @@ struct MenuBarPanel: View {
         let battery = control.state.battery
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(control.isReady ? control.modelName : "QCY Earbuds").font(.headline)
+                Text(control.isReady ? control.modelName : "BudBridge").font(.headline)
                 Spacer()
                 LinkStatusBadge(control: control)
             }

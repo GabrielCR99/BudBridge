@@ -51,7 +51,7 @@ final class ControlLink: NSObject {
     @ObservationIgnored private let outbox: AsyncStream<Packet>.Continuation
     @ObservationIgnored private var writer: Task<Void, Never>?
     @ObservationIgnored private var poller: Task<Void, Never>?
-    @ObservationIgnored private let log = Logger(subsystem: "dev.melobuds.control", category: "ble")
+    @ObservationIgnored private let log = Logger(subsystem: "io.github.gabrielcr99.BudBridge", category: "ble")
 
     @ObservationIgnored
     private var known: (peripheral: UUID, vendor: UInt16)? {

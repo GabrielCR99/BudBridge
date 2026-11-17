@@ -16,7 +16,7 @@ struct ModelInfo: Sendable, Decodable, Identifiable {
 /// Lookup order mirrors the Android app: a copy fetched from QCY for this firmware (cached on disk),
 /// else the snapshot bundled with the app.
 final class PanelStore {
-    private let log = Logger(subsystem: "dev.melobuds.control", category: "panels")
+    private let log = Logger(subsystem: "io.github.gabrielcr99.BudBridge", category: "panels")
     private let models: [UInt16: ModelInfo]
 
     init() {
@@ -68,6 +68,6 @@ final class PanelStore {
 
     private func cacheURL(_ vendorID: UInt16) -> URL? {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appending(path: "MeloBudsControl/Panels/\(vendorID).json")
+            .appending(path: "BudBridge/Panels/\(vendorID).json")
     }
 }

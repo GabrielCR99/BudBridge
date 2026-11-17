@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "MeloBudsControl",
+    name: "BudBridge",
     platforms: [.macOS(.v26)],
     products: [
-        .executable(name: "MeloBudsControl", targets: ["MeloBudsControl"]),
+        .executable(name: "BudBridge", targets: ["BudBridge"]),
         .library(name: "QCYKit", targets: ["QCYKit"]),
     ],
     targets: [
@@ -19,7 +19,7 @@ let package = Package(
         ),
         // SwiftUI app: CoreBluetooth control link + IOBluetooth audio link. Main-actor by default.
         .executableTarget(
-            name: "MeloBudsControl",
+            name: "BudBridge",
             dependencies: ["QCYKit"],
             swiftSettings: [
                 .defaultIsolation(MainActor.self),

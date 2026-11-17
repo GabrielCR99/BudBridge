@@ -13,11 +13,11 @@ final class Headphones {
 }
 
 @main
-struct MeloBudsControlApp: App {
+struct BudBridgeApp: App {
     @State private var headphones = Headphones()
 
     var body: some Scene {
-        Window("QCY Earbuds", id: "main") {
+        Window("BudBridge", id: "main") {
             RootView()
                 .environment(headphones)
                 .frame(minWidth: 760, minHeight: 540)
