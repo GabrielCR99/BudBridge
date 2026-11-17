@@ -64,6 +64,27 @@ extension View {
     }
 }
 
+/// Dims battery levels that may be out of date and says when they were last reported.
+struct BatteryFreshness<Content: View>: View {
+    let control: ControlLink
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 5)) { context in
+            let stale = control.isBatteryStale(at: context.date)
+            VStack(spacing: 6) {
+                content
+                    .opacity(stale ? 0.45 : 1)
+                if stale, let updated = control.batteryUpdated {
+                    Text("Last updated \(updated, style: .time)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
 struct BatteryCard: View {
     let title: String
     let symbol: String

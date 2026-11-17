@@ -548,6 +548,16 @@
         }
       }
     },
+    "Last updated %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última leitura às %@"
+          }
+        }
+      }
+    },
     "Left": {
       "localizations": {
         "pt-BR": {

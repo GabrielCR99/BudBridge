@@ -10,11 +10,15 @@ struct OverviewView: View {
         let battery = control.state.battery
         ScrollView {
             VStack(spacing: 20) {
-                GlassEffectContainer(spacing: 16) {
-                    HStack(spacing: 16) {
-                        BatteryCard(title: String(localized: "Left"), symbol: "earbud.left", level: battery?.left)
-                        BatteryCard(title: String(localized: "Right"), symbol: "earbud.right", level: battery?.right)
-                        BatteryCard(title: String(localized: "Case"), symbol: "earbuds.case", level: battery?.chargingCase)
+                BatteryFreshness(control: control) {
+                    GlassEffectContainer(spacing: 16) {
+                        HStack(spacing: 16) {
+                            BatteryCard(title: String(localized: "Left"), symbol: "earbud.left", level: battery?.left)
+                            BatteryCard(title: String(localized: "Right"), symbol: "earbud.right", level: battery?.right)
+                            if control.reportsCaseBattery {
+                                BatteryCard(title: String(localized: "Case"), symbol: "earbuds.case", level: battery?.chargingCase)
+                            }
+                        }
                     }
                 }
 

@@ -21,10 +21,14 @@ struct MenuBarPanel: View {
                     .fixedSize()
             }
 
-            HStack(spacing: 18) {
-                MiniBattery(title: String(localized: "L", comment: "Left earbud, short"), level: battery?.left)
-                MiniBattery(title: String(localized: "R", comment: "Right earbud, short"), level: battery?.right)
-                MiniBattery(title: String(localized: "Case"), level: battery?.chargingCase)
+            BatteryFreshness(control: control) {
+                HStack(spacing: 18) {
+                    MiniBattery(title: String(localized: "L", comment: "Left earbud, short"), level: battery?.left)
+                    MiniBattery(title: String(localized: "R", comment: "Right earbud, short"), level: battery?.right)
+                    if control.reportsCaseBattery {
+                        MiniBattery(title: String(localized: "Case"), level: battery?.chargingCase)
+                    }
+                }
             }
             .frame(maxWidth: .infinity)
 

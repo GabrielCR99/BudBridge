@@ -34,6 +34,23 @@ final class ControlLink: NSObject {
     private(set) var nearby: [Nearby] = []
     /// Set while a change (LDAC, dual device, spatial EQ…) restarts the earbuds.
     private(set) var isRestarting = false
+    /// Whether this model has ever reported a charging-case level. Some (like the MeloBuds Pro)
+    /// always send 0 for the case, so the case slot is hidden for them.
+    var reportsCaseBattery: Bool {
+        guard let vendorID else { return false }
+        return state.battery?.chargingCase != nil
+            || UserDefaults.standard.bool(forKey: "reportsCaseBattery.\(vendorID)")
+    }
+
+    /// When the battery levels were last reported, by the link or by an advertisement.
+    private(set) var batteryUpdated: Date?
+
+    /// Battery levels that may be out of date: not connected, and nothing heard for a while
+    /// (e.g. the case lid is closed, so the earbuds have stopped broadcasting).
+    func isBatteryStale(at now: Date = .now) -> Bool {
+        guard !isReady, let batteryUpdated else { return !isReady && state.battery != nil }
+        return now.timeIntervalSince(batteryUpdated) > 30
+    }
 
     var isReady: Bool { phase == .ready }
     var family: ModelFamily? { vendorID.map(ModelFamily.init) }
@@ -314,7 +331,7 @@ final class ControlLink: NSObject {
         vendorID = ad.vendorID
         model = panels.model(ad.vendorID)
         panel = panels.panel(for: ad.vendorID)
-        if state.battery == nil { state.battery = ad.battery }
+        if state.battery == nil { updateBattery(ad.battery) }
     }
 
     private func resetDevice() {
@@ -366,6 +383,14 @@ final class ControlLink: NSObject {
         }
     }
 
+    private func updateBattery(_ battery: BatteryStatus) {
+        state.battery = battery
+        batteryUpdated = .now
+        if battery.chargingCase != nil, let vendorID {
+            UserDefaults.standard.set(true, forKey: "reportsCaseBattery.\(vendorID)")
+        }
+    }
+
     private func handle(_ value: [UInt8], from uuid: String) {
         log.debug("RX \(uuid, privacy: .public) \(value.hex, privacy: .public)")
         switch uuid {
@@ -374,7 +399,7 @@ final class ControlLink: NSObject {
                 log.error("bad frame \(value.hex, privacy: .public): \(String(describing: error), privacy: .public)")
             }
         case QCYGATT.battery:
-            state.battery = BatteryStatus(bytes: value) ?? state.battery
+            if let battery = BatteryStatus(bytes: value) { updateBattery(battery) }
         case QCYGATT.version:
             state.firmware = FirmwareVersion(bytes: value)
             if let firmware = state.firmware { refreshPanel(firmware: firmware) }
@@ -411,6 +436,10 @@ extension ControlLink: @MainActor CBCentralManagerDelegate {
         let device = Nearby(id: peripheral.identifier, name: name, advertisement: ad, model: info,
                             isSupported: panels.isSupported(ad.vendorID), rssi: RSSI.intValue)
         if let i = nearby.firstIndex(where: { $0.id == device.id }) { nearby[i] = device } else { nearby.append(device) }
+
+        // Like the phone app, keep the battery fresh from our earbuds' broadcasts while not connected.
+        let isOurs = peripheral.identifier == self.peripheral?.identifier || peripheral.identifier == known?.peripheral
+        if isOurs, !isReady { updateBattery(ad.battery) }
 
         guard phase == .searching || phase == .starting, device.isSupported else { return }
         // Connect automatically only to earbuds this Mac knows: the last ones used, or ones paired for audio.
