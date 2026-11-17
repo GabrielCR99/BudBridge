@@ -18,9 +18,9 @@ struct MenuBarPanel: View {
             }
 
             HStack(spacing: 18) {
-                MiniBattery(title: "L", level: battery?.left)
-                MiniBattery(title: "R", level: battery?.right)
-                MiniBattery(title: "Case", level: battery?.chargingCase)
+                MiniBattery(title: String(localized: "L", comment: "Left earbud, short"), level: battery?.left)
+                MiniBattery(title: String(localized: "R", comment: "Right earbud, short"), level: battery?.right)
+                MiniBattery(title: String(localized: "Case"), level: battery?.chargingCase)
             }
             .frame(maxWidth: .infinity)
 

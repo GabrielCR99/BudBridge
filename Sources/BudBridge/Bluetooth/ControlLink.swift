@@ -38,7 +38,7 @@ final class ControlLink: NSObject {
     var isReady: Bool { phase == .ready }
     var family: ModelFamily? { vendorID.map(ModelFamily.init) }
     var modelID: UInt16? { vendorID }
-    var modelName: String { model?.name ?? "QCY Earbuds" }
+    var modelName: String { model?.name ?? String(localized: "QCY Earbuds") }
 
     /// Classic addresses paired with this Mac; a nearby device matching one is connected automatically.
     @ObservationIgnored var pairedAudioAddresses: () -> [String] = { [] }
@@ -407,7 +407,7 @@ extension ControlLink: @MainActor CBCentralManagerDelegate {
         guard let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
               let ad = QCYAdvertisement(manufacturerData: data) else { return }
         let info = panels.model(ad.vendorID)
-        let name = info?.name ?? peripheral.name?.replacingOccurrences(of: "-APP", with: "") ?? "QCY device"
+        let name = info?.name ?? peripheral.name?.replacingOccurrences(of: "-APP", with: "") ?? String(localized: "QCY device")
         let device = Nearby(id: peripheral.identifier, name: name, advertisement: ad, model: info,
                             isSupported: panels.isSupported(ad.vendorID), rssi: RSSI.intValue)
         if let i = nearby.firstIndex(where: { $0.id == device.id }) { nearby[i] = device } else { nearby.append(device) }

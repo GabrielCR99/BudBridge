@@ -32,6 +32,16 @@ swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns (vector-draw
 The first time it launches, macOS asks for Bluetooth access. To use the earbuds for audio, pair them once in
 System Settings › Bluetooth.
 
+## Languages
+
+BudBridge is localized in **English** and **Brazilian Portuguese** and follows the Mac's language
+(System Settings › General › Language & Region; per-app under Applications). The app's own text lives in
+String Catalogs (`Resources/Localizable.xcstrings`, `Resources/InfoPlist.xcstrings`), compiled by
+`scripts/build-app.sh`. Settings-list labels come from QCY in the same language (`lang: pt`), bundled in
+`Resources/Panels/pt`; models without a Portuguese list fall back to English. Labels are tidied for display
+("5Minute" → "5 minutes", "Prensa longa1.5S" → "Toque longo 1,5 segundos"). To try Portuguese once:
+`open build/BudBridge.app --args -AppleLanguages '(pt-BR)'`.
+
 ## Notes and limits
 
 - **One controller at a time.** The earbuds accept a single LE control connection. While the QCY app

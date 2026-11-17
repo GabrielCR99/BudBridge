@@ -32,7 +32,7 @@ struct TouchControlsView: View {
                     Section {
                         ForEach(touch.callGestures, id: \.self) { gesture in
                             LabeledContent(gesture.name) {
-                                Text(gesture.left == gesture.right ? gesture.left : "L: \(gesture.left) · R: \(gesture.right)")
+                                Text(gesture.left == gesture.right ? gesture.left : String(localized: "L: \(gesture.left) · R: \(gesture.right)"))
                                     .foregroundStyle(.secondary)
                             }
                         }

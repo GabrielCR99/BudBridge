@@ -1,0 +1,1294 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ · connected to this Mac (AAC/SBC)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · conectado a este Mac (AAC/SBC)"
+          }
+        }
+      }
+    },
+    "%@ · paired, not connected": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · emparelhado, não conectado"
+          }
+        }
+      }
+    },
+    "%@?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@?"
+          }
+        }
+      }
+    },
+    "%@…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@…"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "+%lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld"
+          }
+        }
+      }
+    },
+    "0": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0"
+          }
+        }
+      }
+    },
+    "A few of this model's features aren't available yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguns recursos deste modelo ainda não estão disponíveis"
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre"
+          }
+        }
+      }
+    },
+    "Address": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Endereço"
+          }
+        }
+      }
+    },
+    "Allow this app in System Settings › Privacy & Security › Bluetooth.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permita este app em Ajustes do Sistema › Privacidade e Segurança › Bluetooth."
+          }
+        }
+      }
+    },
+    "Apply": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar"
+          }
+        }
+      }
+    },
+    "Apply and Restart": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar e Reiniciar"
+          }
+        }
+      }
+    },
+    "Audio": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Áudio"
+          }
+        }
+      }
+    },
+    "Bluetooth Access Needed": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acesso ao Bluetooth Necessário"
+          }
+        }
+      }
+    },
+    "Bluetooth Is Off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Bluetooth Está Desligado"
+          }
+        }
+      }
+    },
+    "Bluetooth is off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Bluetooth está desligado"
+          }
+        }
+      }
+    },
+    "Bluetooth name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome Bluetooth"
+          }
+        }
+      }
+    },
+    "Bluetooth off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth desligado"
+          }
+        }
+      }
+    },
+    "Bluetooth permission required": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissão de Bluetooth necessária"
+          }
+        }
+      }
+    },
+    "BudBridge": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BudBridge"
+          }
+        }
+      }
+    },
+    "Call gestures are fixed by the firmware.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os gestos de chamada são definidos pelo firmware."
+          }
+        }
+      }
+    },
+    "Calls": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chamadas"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        }
+      }
+    },
+    "Case": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estojo"
+          }
+        }
+      }
+    },
+    "Center": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centralizar"
+          }
+        }
+      }
+    },
+    "Changes apply when you release a slider.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As alterações são aplicadas ao soltar o controle."
+          }
+        }
+      }
+    },
+    "Connect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar"
+          }
+        }
+      }
+    },
+    "Connect Audio": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar Áudio"
+          }
+        }
+      }
+    },
+    "Connected": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        }
+      }
+    },
+    "Connecting": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando"
+          }
+        }
+      }
+    },
+    "Connecting…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando…"
+          }
+        }
+      }
+    },
+    "Connections": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexões"
+          }
+        }
+      }
+    },
+    "Control Released": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controle Liberado"
+          }
+        }
+      }
+    },
+    "Controls": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controles"
+          }
+        }
+      }
+    },
+    "Couldn't disconnect (%@).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível desconectar (%@)."
+          }
+        }
+      }
+    },
+    "Couldn't start the connection (%@).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível iniciar a conexão (%@)."
+          }
+        }
+      }
+    },
+    "Custom": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizado"
+          }
+        }
+      }
+    },
+    "Custom Equalizer": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equalizador Personalizado"
+          }
+        }
+      }
+    },
+    "Custom curve on the earbuds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva personalizada nos fones"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagar"
+          }
+        }
+      }
+    },
+    "Disconnect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar"
+          }
+        }
+      }
+    },
+    "Disconnect Audio": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar Áudio"
+          }
+        }
+      }
+    },
+    "Disconnects %@ and lists the QCY earbuds nearby.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconecta %@ e lista os fones QCY por perto."
+          }
+        }
+      }
+    },
+    "Disconnects the control link so the QCY phone app can connect.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconecta o controle para que o app QCY do celular possa se conectar."
+          }
+        }
+      }
+    },
+    "Earbuds paired with this Mac connect automatically. Close the QCY app on your phone if it's open: the earbuds accept only one controller at a time.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fones emparelhados com este Mac se conectam automaticamente. Feche o app QCY no celular se estiver aberto: os fones aceitam apenas um controle por vez."
+          }
+        }
+      }
+    },
+    "Effects you create in the QCY phone app are stored on the phone, not the earbuds. To bring one over, select it in the phone app, tap Take Control here, then use Save As. Right-click a saved effect to rename or delete it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os efeitos criados no app QCY ficam salvos no celular, não nos fones. Para trazer um, selecione-o no app do celular, clique em Assumir Controle aqui e use Salvar Como. Clique com o botão direito em um efeito salvo para renomear ou apagar."
+          }
+        }
+      }
+    },
+    "Features": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recursos"
+          }
+        }
+      }
+    },
+    "Find earbuds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontrar fones"
+          }
+        }
+      }
+    },
+    "Firmware": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "Flat": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neutro"
+          }
+        }
+      }
+    },
+    "Good to Know": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bom Saber"
+          }
+        }
+      }
+    },
+    "L": {
+      "comment": "Left earbud, short",
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E"
+          }
+        }
+      }
+    },
+    "L: %@ · R: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "L: %1$@ · R: %2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E: %@ · D: %@"
+          }
+        }
+      }
+    },
+    "Left": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquerdo"
+          }
+        }
+      }
+    },
+    "Level": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nível"
+          }
+        }
+      }
+    },
+    "Level %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nível %lld"
+          }
+        }
+      }
+    },
+    "Looking for QCY Earbuds…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurando Fones QCY…"
+          }
+        }
+      }
+    },
+    "Mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo"
+          }
+        }
+      }
+    },
+    "Model": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modelo"
+          }
+        }
+      }
+    },
+    "Model ID": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID do Modelo"
+          }
+        }
+      }
+    },
+    "Music": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Música"
+          }
+        }
+      }
+    },
+    "My Sound Effects": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meus Efeitos Sonoros"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome"
+          }
+        }
+      }
+    },
+    "Nearby": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por Perto"
+          }
+        }
+      }
+    },
+    "No QCY earbuds found yet. Take them out of the case.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum fone QCY encontrado ainda. Tire-os do estojo."
+          }
+        }
+      }
+    },
+    "No permission": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem permissão"
+          }
+        }
+      }
+    },
+    "No saved effects yet.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum efeito salvo ainda."
+          }
+        }
+      }
+    },
+    "Noise Control": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controle de Ruído"
+          }
+        }
+      }
+    },
+    "Not paired with this Mac": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não emparelhado com este Mac"
+          }
+        }
+      }
+    },
+    "Not saved on this Mac yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda não salva neste Mac"
+          }
+        }
+      }
+    },
+    "Open Controls": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Controles"
+          }
+        }
+      }
+    },
+    "Open Privacy Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes de Privacidade"
+          }
+        }
+      }
+    },
+    "Overview": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visão Geral"
+          }
+        }
+      }
+    },
+    "Pair in Settings…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emparelhar nos Ajustes…"
+          }
+        }
+      }
+    },
+    "Pair…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emparelhar…"
+          }
+        }
+      }
+    },
+    "Play Sound": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocar Som"
+          }
+        }
+      }
+    },
+    "Plays a loud chirp through the earbuds while they're connected to this Mac.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca um bipe alto nos fones enquanto estiverem conectados a este Mac."
+          }
+        }
+      }
+    },
+    "QCY Earbuds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fones QCY"
+          }
+        }
+      }
+    },
+    "QCY device": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivo QCY"
+          }
+        }
+      }
+    },
+    "QCY publishes no settings for this model": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A QCY não publica ajustes para este modelo"
+          }
+        }
+      }
+    },
+    "Quick Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes Rápidos"
+          }
+        }
+      }
+    },
+    "R": {
+      "comment": "Right earbud, short",
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D"
+          }
+        }
+      }
+    },
+    "Refresh from Earbuds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar dos Fones"
+          }
+        }
+      }
+    },
+    "Release to Phone": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liberar para o Celular"
+          }
+        }
+      }
+    },
+    "Released": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liberado"
+          }
+        }
+      }
+    },
+    "Released, so the phone app can connect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liberado, o app do celular pode se conectar"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear"
+          }
+        }
+      }
+    },
+    "Rename Sound Effect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear Efeito Sonoro"
+          }
+        }
+      }
+    },
+    "Rename…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear…"
+          }
+        }
+      }
+    },
+    "Restarting…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reiniciando…"
+          }
+        }
+      }
+    },
+    "Right": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direito"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar"
+          }
+        }
+      }
+    },
+    "Save As…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar Como…"
+          }
+        }
+      }
+    },
+    "Save Sound Effect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar Efeito Sonoro"
+          }
+        }
+      }
+    },
+    "Scene": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cenário"
+          }
+        }
+      }
+    },
+    "Searching": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurando"
+          }
+        }
+      }
+    },
+    "Searching for earbuds…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurando fones…"
+          }
+        }
+      }
+    },
+    "Searching… close the QCY app on your phone if it's open": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurando… feche o app QCY no celular se estiver aberto"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes"
+          }
+        }
+      }
+    },
+    "Sound": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Som"
+          }
+        }
+      }
+    },
+    "Stop Sound": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar Som"
+          }
+        }
+      }
+    },
+    "Strength": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade"
+          }
+        }
+      }
+    },
+    "Supported": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compatível"
+          }
+        }
+      }
+    },
+    "Take Control": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assumir Controle"
+          }
+        }
+      }
+    },
+    "Take Control from Phone": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assumir Controle do Celular"
+          }
+        }
+      }
+    },
+    "The earbuds accept one controller at a time. Use Release to Phone before opening the QCY app on your phone.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os fones aceitam um controle por vez. Use Liberar para o Celular antes de abrir o app QCY no celular."
+          }
+        }
+      }
+    },
+    "The earbuds are free for the QCY app on your phone.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os fones estão livres para o app QCY no celular."
+          }
+        }
+      }
+    },
+    "The earbuds didn't accept the connection. Take them out of the case and try again.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os fones não aceitaram a conexão. Tire-os do estojo e tente novamente."
+          }
+        }
+      }
+    },
+    "The earbuds will restart.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os fones serão reiniciados."
+          }
+        }
+      }
+    },
+    "The equalizer isn't supported for this model yet.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O equalizador ainda não é compatível com este modelo."
+          }
+        }
+      }
+    },
+    "This Mac": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este Mac"
+          }
+        }
+      }
+    },
+    "This can't be undone.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isso não pode ser desfeito."
+          }
+        }
+      }
+    },
+    "This model isn't supported yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este modelo ainda não é compatível"
+          }
+        }
+      }
+    },
+    "Touch Controls": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controles de Toque"
+          }
+        }
+      }
+    },
+    "Turn On and Restart": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativar e Reiniciar"
+          }
+        }
+      }
+    },
+    "Turn on %@?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativar %@?"
+          }
+        }
+      }
+    },
+    "Turn on Bluetooth to control your earbuds.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ative o Bluetooth para controlar seus fones."
+          }
+        }
+      }
+    },
+    "Use %@?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar %@?"
+          }
+        }
+      }
+    },
+    "Use Different Earbuds…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar Outros Fones…"
+          }
+        }
+      }
+    },
+    "Uses the JieLi connection protocol": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa o protocolo de conexão JieLi"
+          }
+        }
+      }
+    },
+    "Vocal enhancement": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Realce de voz"
+          }
+        }
+      }
+    },
+    "Waiting for the earbuds to report their current mode…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aguardando os fones informarem o modo atual…"
+          }
+        }
+      }
+    },
+    "Wear detection": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detecção de uso"
+          }
+        }
+      }
+    },
+    "firmware %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "firmware %@"
+          }
+        }
+      }
+    },
+    "macOS streams AAC or SBC. An LDAC switch changes the earbuds' setting for Android sources.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS transmite em AAC ou SBC. A opção LDAC altera o ajuste dos fones para fontes Android."
+          }
+        }
+      }
+    },
+    "—": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
+    "−%lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "−%lld"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

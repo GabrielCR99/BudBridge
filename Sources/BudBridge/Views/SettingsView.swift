@@ -87,7 +87,7 @@ struct SettingsView: View {
         ) { action in
             Button(action.title, role: action.isDestructive ? .destructive : nil) { control.run(action) }
         } message: { action in
-            Text(action.message ?? "This can't be undone.")
+            Text(action.message ?? String(localized: "This can't be undone."))
         }
     }
 }

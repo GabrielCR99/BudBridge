@@ -59,7 +59,7 @@ extension View {
         ) { item in
             Button("Turn On and Restart") { control.set(item, on: true) }
         } message: { item in
-            Text(item.message ?? "The earbuds will restart.")
+            Text(item.message ?? String(localized: "The earbuds will restart."))
         }
     }
 }
@@ -138,8 +138,10 @@ struct AudioConnectionRow: View {
 
     private var detail: String {
         if let error = audio.lastError { return error }
-        guard audio.isPaired, let name = audio.name else { return "Not paired with this Mac" }
-        return audio.isConnected ? "\(name) · connected to this Mac (AAC/SBC)" : "\(name) · paired, not connected"
+        guard audio.isPaired, let name = audio.name else { return String(localized: "Not paired with this Mac") }
+        return audio.isConnected
+            ? String(localized: "\(name) · connected to this Mac (AAC/SBC)")
+            : String(localized: "\(name) · paired, not connected")
     }
 }
 
@@ -173,11 +175,11 @@ struct ControlConnectionRow: View {
     private var detail: String {
         switch control.phase {
         case .ready:
-            [control.modelName, control.state.firmware.map { "firmware \($0.display)" }].compactMap(\.self).joined(separator: " · ")
-        case .paused: "Released, so the phone app can connect"
-        case .bluetoothOff: "Bluetooth is off"
-        case .unauthorized: "Bluetooth permission required"
-        default: "Searching… close the QCY app on your phone if it's open"
+            [control.modelName, control.state.firmware.map { String(localized: "firmware \($0.display)") }].compactMap(\.self).joined(separator: " · ")
+        case .paused: String(localized: "Released, so the phone app can connect")
+        case .bluetoothOff: String(localized: "Bluetooth is off")
+        case .unauthorized: String(localized: "Bluetooth permission required")
+        default: String(localized: "Searching… close the QCY app on your phone if it's open")
         }
     }
 }
@@ -195,9 +197,8 @@ struct NearbyDevicesList: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(device.name)
-                        Text(device.isSupported
-                             ? (device.model?.note ?? "Supported")
-                             : (device.model?.note ?? "This model isn't supported yet"))
+                        Text(device.model?.localizedNote
+                             ?? (device.isSupported ? String(localized: "Supported") : String(localized: "This model isn't supported yet")))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -239,12 +240,12 @@ struct LinkStatusBadge: View {
 
     private var text: String {
         switch control.phase {
-        case .ready: control.isRestarting ? "Restarting…" : "Connected"
-        case .searching, .starting: "Searching"
-        case .connecting: "Connecting"
-        case .paused: "Released"
-        case .bluetoothOff: "Bluetooth off"
-        case .unauthorized: "No permission"
+        case .ready: control.isRestarting ? String(localized: "Restarting…") : String(localized: "Connected")
+        case .searching, .starting: String(localized: "Searching")
+        case .connecting: String(localized: "Connecting")
+        case .paused: String(localized: "Released")
+        case .bluetoothOff: String(localized: "Bluetooth off")
+        case .unauthorized: String(localized: "No permission")
         }
     }
 }

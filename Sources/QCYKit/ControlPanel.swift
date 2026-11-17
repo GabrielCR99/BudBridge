@@ -24,13 +24,14 @@ public struct ControlPanel: Sendable {
     }
 
     /// Accepts the raw API response, its `data` object, the `controlPanel` object, or a bare `layouts` holder.
-    public init(json: Data) throws(ParseError) {
+    /// `language` is the list's language (`"en"` or `"pt"`), used to tidy labels.
+    public init(json: Data, language: String = "en") throws(ParseError) {
         guard let object = try? JSONSerialization.jsonObject(with: json) else { throw .notJSON }
         var node = object as? [String: Any]
         if let data = node?["data"] as? [String: Any] { node = data }
         if let panel = node?["controlPanel"] as? [String: Any] { node = panel }
         guard let layouts = node?["layouts"] as? [Any] else { throw .noLayouts }
-        self.init(layouts: layouts)
+        self = PanelText.$language.withValue(language) { ControlPanel(layouts: layouts) }
     }
 
     init(layouts: [Any]) {
@@ -54,7 +55,7 @@ public struct ControlPanel: Sendable {
             case 1, 10, 14:
                 touch = TouchPanel(block)
             case 8:
-                balance = string(block["name"]) ?? "Balance"
+                balance = text(block["name"]) ?? "Balance"
                 read(CommandID.balance.rawValue)
             case 3:
                 hasFindEarbuds = true
@@ -70,7 +71,7 @@ public struct ControlPanel: Sendable {
                     }
                 }
             case 101:
-                rename = RenamePanel(title: string(block["name"]) ?? "Rename", maxLength: int(block["maxLength"]) ?? 30)
+                rename = RenamePanel(title: text(block["name"]) ?? "Rename", maxLength: int(block["maxLength"]) ?? 30)
             case 103, 1000, 1001:
                 if let choice = ChoiceItem(list: block) {
                     settings.append(.choice(choice))
@@ -98,24 +99,24 @@ public struct NoiseControlPanel: Sendable {
 
     /// Type 6: `modes: [{cmdid, name}]`, sent as a single byte.
     init(simple block: [String: Any]) {
-        title = string(block["name"]) ?? "Noise Control"
+        title = text(block["name"]) ?? "Noise Control"
         modes = (block["modes"] as? [Any] ?? []).enumerated().compactMap { index, entry in
             guard let entry = entry as? [String: Any], let value = int(entry["cmdid"]) else { return nil }
-            return NoiseMode(id: index, name: string(entry["name"]) ?? "Mode \(index + 1)", defaultValue: value, kind: .single)
+            return NoiseMode(id: index, name: text(entry["name"]) ?? "Mode \(index + 1)", defaultValue: value, kind: .single)
         }
     }
 
     /// Type 9: modes with `startcmdid…endcmdid` ranges; `viewtype` 1 = scenes, 2 = level slider, else one value.
     init(scenes block: [String: Any]) {
-        title = string(block["name"]) ?? "Noise Control"
+        title = text(block["name"]) ?? "Noise Control"
         modes = (block["modes"] as? [Any] ?? []).enumerated().compactMap { index, entry in
             guard let entry = entry as? [String: Any], let start = int(entry["startcmdid"]) else { return nil }
             let end = max(int(entry["endcmdid"]) ?? start, start)
-            let name = string(entry["name"]) ?? "Mode \(index + 1)"
+            let name = text(entry["name"]) ?? "Mode \(index + 1)"
             let defaultValue = int(entry["defaultcmd"]) ?? start
             let scenes = (entry["items"] as? [Any] ?? []).compactMap { item -> NoiseScene? in
                 guard let item = item as? [String: Any], let s = int(item["startcmdid"]) else { return nil }
-                return NoiseScene(name: cleanLabel(string(item["name"]) ?? ""), detail: string(item["describe"]),
+                return NoiseScene(name: cleanLabel(text(item["name"]) ?? ""), detail: text(item["describe"]),
                                   values: s...max(int(item["endcmdid"]) ?? s, s))
             }
             let kind: NoiseMode.Kind
@@ -207,7 +208,7 @@ public struct EqualizerPanel: Sendable {
     public var rebootTip: String?
 
     init?(_ block: [String: Any]) {
-        title = string(block["name"]) ?? "Equalizer"
+        title = text(block["name"]) ?? "Equalizer"
         let presetBlocks = (block["sys_eq"] as? [Any] ?? []).compactMap { $0 as? [String: Any] }
         let parametric = presetBlocks.contains { $0["q"] != nil && $0["freq"] != nil }
         let typed = parametric && (presetBlocks.contains { $0["iitType"] != nil } || block["iitType"] != nil)
@@ -219,7 +220,7 @@ public struct EqualizerPanel: Sendable {
         gainRange = -abs(minDB)...abs(maxDB)
         baseGain = int(block["basedb"]) ?? 0
         characteristic = shortUUID(string(block["character"])) ?? QCYGATT.legacyEQ
-        rebootTip = string(block["rebootTip"]).flatMap { $0.isEmpty ? nil : $0 }
+        rebootTip = text(block["rebootTip"]).flatMap { $0.isEmpty ? nil : $0 }
         presets = presetBlocks.enumerated().map { index, p in
             EQPreset(p, fallbackID: index + 1, parametric: parametric)
         }
@@ -304,11 +305,11 @@ public struct EQPreset: Sendable, Hashable, Identifiable {
 
     init(_ p: [String: Any], fallbackID: Int, parametric: Bool) {
         id = UInt8(clamping: int(p["id"]) ?? fallbackID)
-        name = string(p["name"]) ?? "Preset \(fallbackID)"
+        name = text(p["name"]) ?? "Preset \(fallbackID)"
         masterGain = Double(int(p["mastergain"]) ?? 0)
         let gains = numbers(p["eqs"])
         self.gains = gains
-        warning = string(p["alarmMsg"]).flatMap { $0.isEmpty ? nil : $0 }
+        warning = text(p["alarmMsg"]).flatMap { $0.isEmpty ? nil : $0 }
         guard parametric else { filters = []; return }
         let freq = numbers(p["freq"]), q = numbers(p["q"]), types = numbers(p["iitType"])
         filters = (0..<min(freq.count, q.count, gains.count)).map { i in
@@ -327,7 +328,7 @@ public struct TouchPanel: Sendable {
     public var callGestures: [CallGesture]
 
     init?(_ block: [String: Any]) {
-        title = string(block["name"]) ?? "Touch Controls"
+        title = text(block["name"]) ?? "Touch Controls"
         callGestures = []
         groups = []
         switch int(block["type"]) {
@@ -335,24 +336,24 @@ public struct TouchPanel: Sendable {
             let music = block["music"] as? [String: Any]
             var left: [TouchControl] = [], right: [TouchControl] = []
             for case let event as [String: Any] in (music?["event"] as? [Any] ?? []) {
-                let gesture = string(event["name"]) ?? "Gesture"
+                let gesture = text(event["name"]) ?? "Gesture"
                 if let l = event["left"] as? [String: Any], let c = TouchControl(event: l, gesture: gesture) { left.append(c) }
                 if let r = event["right"] as? [String: Any], let c = TouchControl(event: r, gesture: gesture) { right.append(c) }
             }
             groups = [TouchGroup(name: "Left Earbud", controls: left), TouchGroup(name: "Right Earbud", controls: right)]
             let voice = block["voice"] as? [String: Any]
             callGestures = (voice?["event"] as? [Any] ?? []).compactMap { entry in
-                guard let e = entry as? [String: Any], let name = string(e["name"]) else { return nil }
-                return CallGesture(name: name, left: string(e["left"]) ?? "", right: string(e["right"]) ?? "")
+                guard let e = entry as? [String: Any], let name = text(e["name"]) else { return nil }
+                return CallGesture(name: name, left: text(e["left"]) ?? "", right: text(e["right"]) ?? "")
             }
         case 14:
             groups = (block["buttons"] as? [Any] ?? []).compactMap { entry in
                 guard let b = entry as? [String: Any] else { return nil }
                 let controls = (b["events"] as? [Any] ?? []).compactMap { e -> TouchControl? in
                     guard let e = e as? [String: Any] else { return nil }
-                    return TouchControl(event: e, gesture: string(e["name"]) ?? "Gesture")
+                    return TouchControl(event: e, gesture: text(e["name"]) ?? "Gesture")
                 }
-                return TouchGroup(name: cleanLabel(string(b["keyName"]) ?? "Button"), controls: controls)
+                return TouchGroup(name: cleanLabel(text(b["keyName"]) ?? "Button"), controls: controls)
             }
         case 1:
             let order = ["single_click", "double_click", "three_click", "four_click", "long_press"]
@@ -363,9 +364,9 @@ public struct TouchPanel: Sendable {
                           let characteristic = shortUUID(string(g["character"])) else { return nil }
                     let options = (g["list"] as? [Any] ?? []).compactMap { o -> TouchOption? in
                         guard let o = o as? [String: Any], let bytes = hexBytes(o["cmd"]) else { return nil }
-                        return TouchOption(name: string(o["name"]) ?? "?", value: bytes)
+                        return TouchOption(name: text(o["name"]) ?? "?", value: bytes)
                     }
-                    return TouchControl(id: "\(key).\(name)", gesture: string(g["name"]) ?? name,
+                    return TouchControl(id: "\(key).\(name)", gesture: text(g["name"]) ?? name,
                                         target: .characteristic(characteristic), options: options)
                 }
                 groups.append(TouchGroup(name: side, controls: controls))
@@ -414,7 +415,7 @@ public struct TouchControl: Sendable, Hashable, Identifiable {
         guard let eventID = int(event["eventID"]) else { return nil }
         let options = (event["list"] as? [Any] ?? []).compactMap { o -> TouchOption? in
             guard let o = o as? [String: Any], let cmd = int(o["cmd"]) else { return nil }
-            return TouchOption(name: string(o["name"]) ?? "?", value: [UInt8(clamping: cmd)])
+            return TouchOption(name: text(o["name"]) ?? "?", value: [UInt8(clamping: cmd)])
         }
         self.init(id: "event.\(eventID)", gesture: gesture, target: .event(UInt8(clamping: eventID)), options: options)
     }
@@ -466,7 +467,7 @@ public struct ToggleItem: Sendable, Hashable {
 
     init?(_ item: [String: Any]) {
         guard let type = int(item["type"]), (200...206).contains(type),
-              let title = string(item["title"]),
+              let title = text(item["title"]),
               let characteristic = shortUUID(string(item["character"])) else { return nil }
         var on: [UInt8]?, off: [UInt8]?
         for case let sub as [String: Any] in (item["sub_items"] as? [Any] ?? []) {
@@ -478,7 +479,7 @@ public struct ToggleItem: Sendable, Hashable {
         self.characteristic = characteristic
         self.on = on
         self.off = off
-        message = (string(item["msg_ios"]) ?? string(item["msg"])).flatMap { $0.isEmpty ? nil : $0 }
+        message = (text(item["msg_ios"]) ?? text(item["msg"])).flatMap { $0.isEmpty ? nil : $0 }
     }
 
     /// For framed switches on 1001, the record that reports the state on 1002.
@@ -511,15 +512,15 @@ public struct ChoiceItem: Sendable, Hashable {
 
     /// Layout types 103 (decimal values), 1000 and 1001 (hex payloads).
     init?(list block: [String: Any]) {
-        guard let cmd = int(block["cmdid"]), let title = string(block["name"]) else { return nil }
+        guard let cmd = int(block["cmdid"]), let title = text(block["name"]) else { return nil }
         let type = int(block["type"])
         var pairs: [(String, String)] = []
         if let keys = block["itemKey"] as? [Any], let names = block["itemName"] as? [Any] {
-            pairs = zip(keys.compactMap(string), names.compactMap(string)).map { ($0, $1) }
+            pairs = zip(keys.compactMap(string), names.compactMap(text)).map { ($0, $1) }
         } else if let keys = block["itemKeyIos"] as? [Any], let names = block["itemNameIos"] as? [Any] {
-            pairs = zip(keys.compactMap(string), names.compactMap(string)).map { ($0, $1) }
+            pairs = zip(keys.compactMap(string), names.compactMap(text)).map { ($0, $1) }
         } else if let map = block["itemName"] as? [String: Any] {
-            pairs = map.compactMap { k, v in string(v).map { (k, $0) } }
+            pairs = map.compactMap { k, v in text(v).map { (k, $0) } }
                 .sorted { (Int($0.0) ?? Int($0.0, radix: 16) ?? 0) < (Int($1.0) ?? Int($1.0, radix: 16) ?? 0) }
         }
         options = pairs.compactMap { key, name in
@@ -533,11 +534,11 @@ public struct ChoiceItem: Sendable, Hashable {
 
     /// Item type 2: a per-characteristic list such as the V1 voice language.
     init?(languageItem item: [String: Any]) {
-        guard int(item["type"]) == 2, let title = string(item["title"]),
+        guard int(item["type"]) == 2, let title = text(item["title"]),
               let characteristic = shortUUID(string(item["character"])) else { return nil }
         options = (item["sub_items"] as? [Any] ?? []).compactMap { s in
             guard let s = s as? [String: Any], let bytes = hexBytes(s["cmd"]) else { return nil }
-            return ChoiceOption(name: string(s["name"]) ?? "?", payload: bytes)
+            return ChoiceOption(name: text(s["name"]) ?? "?", payload: bytes)
         }
         guard !options.isEmpty else { return nil }
         self.title = cleanLabel(title)
@@ -571,12 +572,12 @@ public struct ActionItem: Sendable, Hashable, Identifiable {
 
     init?(_ item: [String: Any]) {
         guard let type = int(item["type"]), [3, 4, 100].contains(type),
-              let title = string(item["title"]), let bytes = hexBytes(item["cmd"]),
+              let title = text(item["title"]), let bytes = hexBytes(item["cmd"]),
               let characteristic = shortUUID(string(item["character"])) else { return nil }
         self.title = cleanLabel(title)
         self.bytes = bytes
         self.characteristic = characteristic
-        message = string(item["msg"]).flatMap { $0.isEmpty ? nil : $0 }
+        message = text(item["msg"]).flatMap { $0.isEmpty ? nil : $0 }
         isDestructive = type != 3
     }
 }
@@ -590,12 +591,12 @@ public struct WearDetectionPanel: Sendable, Hashable {
     public var musicOptions: [ChoiceOption]
 
     init(_ block: [String: Any]) {
-        title = string(block["name"]) ?? "Wear Detection"
-        message = string(block["msg"])
-        ancMessage = string(block["ancMsg"])
+        title = text(block["name"]) ?? "Wear Detection"
+        message = text(block["msg"])
+        ancMessage = text(block["ancMsg"])
         musicOptions = (block["subItem"] as? [Any] ?? []).compactMap { s in
             guard let s = s as? [String: Any], let cid = int(s["cid"]) else { return nil }
-            return ChoiceOption(name: string(s["name"]) ?? "?", payload: [UInt8(clamping: cid)])
+            return ChoiceOption(name: text(s["name"]) ?? "?", payload: [UInt8(clamping: cid)])
         }
     }
 }
@@ -645,7 +646,53 @@ func shortUUID(_ uuid: String?) -> String? {
     return String(uuid.uppercased().dropFirst(4).prefix(4))
 }
 
-/// Panel labels sometimes carry a second line or stray spaces.
+/// Display text from the panel, tidied (see `PanelText.tidy`).
+func text(_ any: Any?) -> String? {
+    string(any).map(PanelText.tidy)
+}
+
+/// Panel labels sometimes carry a second line; keep the first.
 func cleanLabel(_ s: String) -> String {
     (s.split(separator: "\n").first.map(String.init) ?? s).trimmingCharacters(in: .whitespaces)
+}
+
+/// The settings lists are typed by hand and full of small slips: "5Minute", "Keep touching1.5S",
+/// "Don‘t shut down", stray line breaks. Labels are tidied for display only; payloads are read
+/// separately, so the bytes sent never change. Units follow the list's language.
+public enum PanelText {
+    /// Language of the settings list being parsed (`"en"` or `"pt"`), set by `ControlPanel(json:language:)`.
+    @TaskLocal public static var language = "en"
+
+    /// Obvious mistranslations in QCY's Portuguese lists.
+    static let portugueseFixes = ["Prensa longa": "Toque longo"]
+
+    public static func tidy(_ raw: String) -> String {
+        let portuguese = language == "pt"
+        var s = raw.replacing("‘", with: "’").replacing("´", with: "’")
+        if portuguese {
+            for (wrong, right) in portugueseFixes { s = s.replacing(wrong, with: right) }
+        }
+        // A duplicated entry in one panel ends in a stray "1" ("10Minute1", "Don‘t shut down1").
+        s = s.replacing(/([A-Za-z])1$/) { "\($0.output.1)" }
+        // "press1.5S" → "press 1.5S"
+        s = s.replacing(/(\p{Ll})(\d)/) { "\($0.output.1) \($0.output.2)" }
+        // "5Minute" → "5 minutes", "5Minuto" → "5 minutos"
+        s = s.replacing(/(\d+)\s*[Mm]inut(?:es?|os?)\b/) { match in
+            let n = match.output.1
+            return switch (portuguese, n == "1") {
+            case (true, true): "1 minuto"
+            case (true, false): "\(n) minutos"
+            case (false, true): "1 minute"
+            case (false, false): "\(n) minutes"
+            }
+        }
+        // "1.5S" → "1.5 seconds" / "1,5 segundos"
+        s = s.replacing(/(\d+)(?:\.(\d+))?\s*[Ss]\b/) { match in
+            let number = match.output.2.map { "\(match.output.1)\(portuguese ? "," : ".")\($0)" } ?? "\(match.output.1)"
+            return "\(number) \(portuguese ? "segundos" : "seconds")"
+        }
+        // Spaces around line breaks, doubled spaces. Breaks stay: labels keep their first line.
+        s = s.replacing(/[ \t]*\n[ \t]*/, with: "\n").replacing(/[ ]{2,}/, with: " ")
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

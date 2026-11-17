@@ -14,5 +14,11 @@ cp Resources/Info.plist "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 cp -R Resources/Panels "$app/Contents/Resources/Panels"
 
+# Localizations: String Catalogs → <lang>.lproj/*.strings (English is the source language).
+for catalog in Resources/Localizable.xcstrings Resources/InfoPlist.xcstrings; do
+  xcrun xcstringstool compile "$catalog" --output-directory "$app/Contents/Resources"
+done
+mkdir -p "$app/Contents/Resources/en.lproj"
+
 codesign --force --options runtime --sign - "$app"
 echo "Built $app"

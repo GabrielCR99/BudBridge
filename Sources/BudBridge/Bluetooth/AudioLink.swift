@@ -66,7 +66,7 @@ final class AudioLink: NSObject {
         let status = device.openConnection(self)
         if status != kIOReturnSuccess {
             isBusy = false
-            lastError = "Couldn't start the connection (\(String(format: "0x%08X", status)))."
+            lastError = String(localized: "Couldn't start the connection (\(String(format: "0x%08X", status))).")
         }
     }
 
@@ -76,7 +76,7 @@ final class AudioLink: NSObject {
         let status = device.closeConnection()
         isBusy = false
         if status != kIOReturnSuccess {
-            lastError = "Couldn't disconnect (\(String(format: "0x%08X", status)))."
+            lastError = String(localized: "Couldn't disconnect (\(String(format: "0x%08X", status))).")
         }
         updateConnectionState()
     }
@@ -104,7 +104,7 @@ final class AudioLink: NSObject {
         Task { @MainActor in
             self.isBusy = false
             if status != kIOReturnSuccess {
-                self.lastError = "The earbuds didn't accept the connection. Take them out of the case and try again."
+                self.lastError = String(localized: "The earbuds didn't accept the connection. Take them out of the case and try again.")
             }
             self.updateConnectionState()
         }

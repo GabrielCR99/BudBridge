@@ -12,9 +12,9 @@ struct OverviewView: View {
             VStack(spacing: 20) {
                 GlassEffectContainer(spacing: 16) {
                     HStack(spacing: 16) {
-                        BatteryCard(title: "Left", symbol: "earbud.left", level: battery?.left)
-                        BatteryCard(title: "Right", symbol: "earbud.right", level: battery?.right)
-                        BatteryCard(title: "Case", symbol: "earbuds.case", level: battery?.chargingCase)
+                        BatteryCard(title: String(localized: "Left"), symbol: "earbud.left", level: battery?.left)
+                        BatteryCard(title: String(localized: "Right"), symbol: "earbud.right", level: battery?.right)
+                        BatteryCard(title: String(localized: "Case"), symbol: "earbuds.case", level: battery?.chargingCase)
                     }
                 }
 

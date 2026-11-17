@@ -45,7 +45,7 @@ struct SoundView: View {
                                 }
                             }
                             if !eq.bands.isEmpty {
-                                PresetButton(title: "Custom", isSelected: isCustom && activeEffect == nil) {
+                                PresetButton(title: String(localized: "Custom"), isSelected: isCustom && activeEffect == nil) {
                                     control.apply(customGains: gains)
                                 }
                             }
@@ -139,7 +139,7 @@ struct SoundView: View {
     }
 
     private var namingTitle: String {
-        if case .rename = naming { "Rename Sound Effect" } else { "Save Sound Effect" }
+        if case .rename = naming { String(localized: "Rename Sound Effect") } else { String(localized: "Save Sound Effect") }
     }
 
     private func commitName() {

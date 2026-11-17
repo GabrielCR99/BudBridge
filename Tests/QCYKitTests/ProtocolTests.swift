@@ -151,6 +151,56 @@ struct MeloBudsPanelTests {
     }
 }
 
+struct PanelTextTests {
+    @Test(arguments: [
+        ("5Minute", "5 minutes"),
+        ("1Minute", "1 minute"),
+        ("10Minute1", "10 minutes"),
+        ("Keep touching1.5S", "Keep touching 1.5 seconds"),
+        ("Long press1.5S", "Long press 1.5 seconds"),
+        ("Don‘t shut down", "Don’t shut down"),
+        (" Transparency", "Transparency"),
+        ("Do you reset factory?\n Reset button functions", "Do you reset factory?\nReset button functions"),
+        ("LDAC Switch", "LDAC Switch"),
+        ("Volume de notificação", "Volume de notificação"),
+    ])
+    func tidiesQCYLabels(raw: String, expected: String) {
+        #expect(PanelText.tidy(raw) == expected)
+    }
+
+    @Test(arguments: [
+        ("5Minuto", "5 minutos"),
+        ("1Minuto", "1 minuto"),
+        ("Prensa longa1.5S", "Toque longo 1,5 segundos"),
+        (" Transparente", "Transparente"),
+    ])
+    func tidiesPortugueseLabels(raw: String, expected: String) {
+        #expect(PanelText.$language.withValue("pt") { PanelText.tidy(raw) } == expected)
+    }
+
+    @Test func portugueseMeloBudsPanel() throws {
+        let url = Panels.directory.appending(path: "pt/\(Panels.meloBudsPro).json")
+        let panel = try ControlPanel(json: Data(contentsOf: url), language: "pt")
+        let choices = panel.settings.compactMap { if case .choice(let c) = $0 { c } else { nil } }
+        let tone = try #require(choices.first { $0.options.map(\.payload) == [Array("WQ00".utf8), Array("WQ01".utf8)] })
+        #expect(tone.title == "Troca de Tom")
+        #expect(tone.options.map(\.name) == ["Inglês", "Chinês"])
+        let powerOff = try #require(choices.first { $0.options.first?.payload == [0x05, 0x00] })
+        #expect(powerOff.options.first?.name == "5 minutos")
+        // The bytes are the same as the English list's.
+        #expect(panel.readCommands == (try Panels.load(Panels.meloBudsPro)).readCommands)
+    }
+
+    @Test func tidiedLabelsKeepTheirBytes() throws {
+        let panel = try Panels.load(Panels.meloBudsPro)
+        let choices = panel.settings.compactMap { if case .choice(let c) = $0 { c } else { nil } }
+        let powerOff = try #require(choices.first { $0.title == "Disconnect and power off" })
+        #expect(powerOff.options.first?.name == "5 minutes")
+        #expect(powerOff.options.first?.payload == [0x05, 0x00])
+        #expect(panel.touch?.callGestures.last?.name == "Long press 1.5 seconds")
+    }
+}
+
 struct OtherModelTests {
     @Test func everyBundledPanelParses() throws {
         let ids = Panels.supportedIDs
