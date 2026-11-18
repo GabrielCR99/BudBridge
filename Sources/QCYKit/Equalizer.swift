@@ -22,11 +22,11 @@ public struct EQFilter: Sendable, Hashable {
         self.kind = kind
     }
 
-    static let empty = EQFilter(frequency: 0, gain: 0, q: 0, kind: .userBand)
+    static let empty = Self(frequency: 0, gain: 0, q: 0, kind: .userBand)
 }
 
 /// Payload of record 0x22 (typed) or 0x20 (untyped):
-/// `[id, masterGain s16] + slots × [freq u16, gain s16, q u16 (, type)]`,
+/// `[id, globalGain s16] + slots × [freq u16, gain s16, q u16 (, type)]`,
 /// all little-endian, gain and Q scaled by 100 (`QCYHeadsetClient.setEQWtihQFG2Type`).
 public struct EQConfiguration: Sendable, Hashable {
     public static let maxSlots = 20
@@ -34,12 +34,12 @@ public struct EQConfiguration: Sendable, Hashable {
     public static let customID: UInt8 = 0x80
 
     public var id: UInt8
-    public var masterGain: Double
+    public var globalGain: Double
     public var filters: [EQFilter]
 
-    public init(id: UInt8, masterGain: Double = 0, filters: [EQFilter]) {
+    public init(id: UInt8, globalGain: Double = 0, filters: [EQFilter]) {
         self.id = id
-        self.masterGain = masterGain
+        self.globalGain = globalGain
         self.filters = filters
     }
 
@@ -47,7 +47,7 @@ public struct EQConfiguration: Sendable, Hashable {
         let stride = typed ? 7 : 6
         guard bytes.count >= 3 + stride else { return nil }
         id = bytes[0]
-        masterGain = Double(Int16(bitPattern: UInt16(bytes[1]) | UInt16(bytes[2]) << 8)) / 100
+        globalGain = Double(Int16(bitPattern: UInt16(bytes[1]) | UInt16(bytes[2]) << 8)) / 100
         var filters: [EQFilter] = []
         var i = 3
         while i + stride <= bytes.count {
@@ -77,7 +77,7 @@ public struct EQConfiguration: Sendable, Hashable {
 
     public func encoded(typed: Bool = true, slots: Int = maxSlots) -> [UInt8] {
         var out: [UInt8] = [id]
-        out += Self.le(Int16(clamping: Int((masterGain * 100).rounded())))
+        out += Self.le(Int16(clamping: Int((globalGain * 100).rounded())))
         let padded = (filters + Array(repeating: .empty, count: slots)).prefix(slots)
         for f in padded {
             out += Self.le(f.frequency)

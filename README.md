@@ -23,12 +23,38 @@ isolation, `@Observable`, isolated protocol conformances, typed throws and Swift
 ```sh
 ./scripts/build-app.sh          # → build/BudBridge.app (ad-hoc signed)
 open build/BudBridge.app
-swift test                      # protocol tests against bytes captured from real earbuds
+swift test                      # protocol, store and view-model tests (48)
 swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns (vector-drawn, no assets)
 ```
 
 The first time it launches, macOS asks for Bluetooth access. To use the earbuds for audio, pair them once in
 System Settings › Bluetooth.
+
+## Architecture
+
+MVVM with a coordinator, in the spirit of objc.io's *App Architecture* (MVVM-C):
+
+```
+Sources/
+├── QCYKit/                 Pure protocol layer: frames, commands, settings-list parser, device state
+└── BudBridge/
+    ├── App/                BudBridgeApp (scenes) and AppCoordinator (builds and wires everything)
+    ├── Models/             Value types: ModelInfo, SoundEffect, NearbyDevice, Page
+    ├── Services/           Model layer, no SwiftUI
+    │   ├── HeadphonesStore     single source of truth: state, settings list, commands, connect policy
+    │   ├── Bluetooth/          ControlTransport + BLEConnection (CoreBluetooth), AudioConnection
+    │   │                       (IOBluetooth), FindTone
+    │   └── Storage/            PanelRepository (settings lists), EffectLibrary (saved EQ curves)
+    ├── ViewModels/         One per screen plus shared ones; Foundation + QCYKit only
+    └── Views/              SwiftUI, render view-model values and forward actions
+```
+
+- **Data flows one way:** Views → ViewModels → `HeadphonesStore` → `ControlTransport` → earbuds, and the
+  earbuds' notifications come back into the store, which views observe through their view models.
+- **Testable:** services sit behind small protocols (`ControlTransport`, `PanelProviding`, `AudioConnecting`,
+  `FindTonePlaying`). `Tests/BudBridgeTests` runs the real store and view models against fakes.
+- **SwiftLint** runs on every build through the official build-tool plugin (`.swiftlint.yml`); the codebase
+  passes `swiftlint lint --strict` with no violations.
 
 ## CI/CD
 

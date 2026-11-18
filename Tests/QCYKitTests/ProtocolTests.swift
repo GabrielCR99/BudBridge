@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import QCYKit
+import Testing
 
 /// Settings-list fixtures (`Tests/Fixtures/Panels/<modelID>.json`): the structure and numbers of real QCY
 /// lists, with sentence-length texts replaced by our own wording. QCY's lists aren't redistributed.
@@ -100,7 +100,9 @@ struct MeloBudsPanelTests {
 
     @Test func storedCustomCurveDecodes() throws {
         let frame = try #require([UInt8](hex:
-            "FF91228F8118FC1E0000004600041F002C016400FF3C00F4013C00003E00C8006400FF7D0000006400FFDC00E0FC640000FA009CFF6400FFF4019CFF6400FFE80300006400FFD00764006400FFF00A6400640000A00FC8006400FFB4140CFEC80000401FF4016400FFE02E2003500000803E2C016400FF000000000000FF000000000000FF000000000000FF000000000000FF"))
+            "FF91228F8118FC1E0000004600041F002C016400FF3C00F4013C00003E00C8006400FF7D0000006400FFDC00E0FC640000"
+            + "FA009CFF6400FFF4019CFF6400FFE80300006400FFD00764006400FFF00A6400640000A00FC8006400FFB4140CFEC80000"
+            + "401FF4016400FFE02E2003500000803E2C016400FF000000000000FF000000000000FF000000000000FF000000000000FF"))
         var state = DeviceState()
         try state.apply(frame: frame)
         let selection = try #require(panel.equalizer?.selection(in: state))

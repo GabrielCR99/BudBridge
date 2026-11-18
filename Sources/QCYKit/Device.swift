@@ -139,7 +139,7 @@ public struct DeviceState: Sendable, Equatable {
     public var balance: Int? { records[CommandID.balance.rawValue]?.first.map(Int.init) }
 
     public var deviceName: String? {
-        records[CommandID.pairName.rawValue].map { String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self) }
+        records[CommandID.pairName.rawValue].flatMap { String(bytes: $0.prefix { $0 != 0 }, encoding: .utf8) }
     }
 
     public var wearDetection: WearDetection? {
