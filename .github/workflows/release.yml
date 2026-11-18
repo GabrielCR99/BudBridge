@@ -1,0 +1,90 @@
+# Continuous delivery: builds a release from main and publishes it as a GitHub Release with a tag.
+# Run it from Actions › Release › Run workflow, entering the version (e.g. 1.1.0).
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 1.1.0 (creates the tag v1.1.0)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as a pre-release"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: macos-26
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the tag and the release
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      # Inputs go through env, never straight into scripts, to rule out script injection.
+      VERSION: ${{ inputs.version }}
+      PRERELEASE: ${{ inputs.prerelease }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # needed to check existing tags and generate release notes
+          persist-credentials: false
+
+      - name: Validate the release
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must look like 1.2.3 (got '$VERSION')."
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Releases are built from main only (got $GITHUB_REF)."
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "::error::Tag v$VERSION already exists."
+            exit 1
+          fi
+
+      - name: Check for files that must not be committed
+        run: scripts/check-forbidden-files.sh
+
+      - name: Run tests
+        run: swift test
+
+      - name: Build the app
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: scripts/build-app.sh
+
+      - name: Package
+        run: |
+          zip="build/BudBridge-$VERSION.zip"
+          ditto -c -k --keepParent build/BudBridge.app "$zip"
+          (cd build && shasum -a 256 "BudBridge-$VERSION.zip" > "BudBridge-$VERSION.zip.sha256")
+          cat "build/BudBridge-$VERSION.zip.sha256"
+
+      - name: Publish the tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=()
+          if [[ "$PRERELEASE" == "true" ]]; then flags+=(--prerelease); fi
+          gh release create "v$VERSION" \
+            "build/BudBridge-$VERSION.zip" \
+            "build/BudBridge-$VERSION.zip.sha256" \
+            --target "$GITHUB_SHA" \
+            --title "BudBridge $VERSION" \
+            --generate-notes \
+            --notes "Unzip and move BudBridge to Applications. This build isn't notarized: on first launch, open System Settings › Privacy & Security and click Open Anyway." \
+            "${flags[@]}"
