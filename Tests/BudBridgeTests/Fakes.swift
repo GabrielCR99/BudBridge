@@ -164,6 +164,20 @@ enum Fixtures {
         return (store, transport, panels)
     }
 
+    /// A store as it starts when BudBridge relaunches: the MeloBuds Pro is remembered from the last run.
+    static func relaunchedStore(loadingTimeout: Duration = .seconds(8)) -> (HeadphonesStore, FakeTransport) {
+        let transport = FakeTransport()
+        transport.knownPeripherals.insert(meloBudsID)
+        let suite = "BudBridgeTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        defaults.set(meloBudsID.uuidString, forKey: "peripheralID")
+        defaults.set(Int(QCYAdvertisement.meloBudsPro), forKey: "vendorID")
+        let store = HeadphonesStore(transport: transport, panels: FakePanels(), defaults: defaults,
+                                    loadingTimeout: loadingTimeout)
+        return (store, transport)
+    }
+
     /// A store already connected to the MeloBuds Pro with its settings read.
     static func connectedStore() -> (HeadphonesStore, FakeTransport, FakeAudio) {
         let (store, transport, audio) = makeStore()

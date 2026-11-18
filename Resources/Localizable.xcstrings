@@ -91,6 +91,16 @@
         }
       }
     },
+    "About BudBridge": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre o BudBridge"
+          }
+        }
+      }
+    },
     "Address": {
       "localizations": {
         "pt-BR": {
@@ -107,6 +117,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Permita este app em Ajustes do Sistema › Privacidade e Segurança › Bluetooth."
+          }
+        }
+      }
+    },
+    "An unofficial macOS app for QCY earbuds: noise control, EQ, touch controls and more.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um app não oficial para macOS para fones QCY: controle de ruído, equalizador, controles de toque e mais."
           }
         }
       }
@@ -608,6 +628,16 @@
         }
       }
     },
+    "Loading": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando"
+          }
+        }
+      }
+    },
     "Looking for QCY Earbuds…": {
       "localizations": {
         "pt-BR": {
@@ -724,6 +754,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Controle de Ruído"
+          }
+        }
+      }
+    },
+    "Not affiliated with QCY. “QCY” and “MeloBuds” are trademarks of their owner.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem afiliação com a QCY. “QCY” e “MeloBuds” são marcas registradas de seu proprietário."
           }
         }
       }
@@ -1045,6 +1085,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Som"
+          }
+        }
+      }
+    },
+    "Source code on GitHub": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código-fonte no GitHub"
           }
         }
       }

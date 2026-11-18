@@ -4,6 +4,7 @@ import SwiftUI
 struct MenuBarPanel: View {
     let viewModel: MenuBarViewModel
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -78,6 +79,8 @@ struct MenuBarPanel: View {
 
     private var openButton: some View {
         Button("Open Controls") {
+            // Close the panel first, so it doesn't stay open on top of the window.
+            dismiss()
             openWindow(id: "main")
             NSApp.activate()
         }
