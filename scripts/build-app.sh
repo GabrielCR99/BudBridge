@@ -24,5 +24,13 @@ for catalog in Resources/Localizable.xcstrings Resources/InfoPlist.xcstrings; do
 done
 mkdir -p "$app/Contents/Resources/en.lproj"
 
+# Release builds stamp their version (CI passes VERSION=1.2.3 and BUILD_NUMBER=<run number>).
+if [[ -n "${VERSION:-}" ]]; then
+  plutil -replace CFBundleShortVersionString -string "$VERSION" "$app/Contents/Info.plist"
+fi
+if [[ -n "${BUILD_NUMBER:-}" ]]; then
+  plutil -replace CFBundleVersion -string "$BUILD_NUMBER" "$app/Contents/Info.plist"
+fi
+
 codesign --force --options runtime --sign - "$app"
 echo "Built $app"

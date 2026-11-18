@@ -1,0 +1,15 @@
+# Keeps the pinned GitHub Actions (and, once added, Swift packages) up to date.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: weekly

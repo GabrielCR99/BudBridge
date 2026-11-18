@@ -30,6 +30,26 @@ swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns (vector-draw
 The first time it launches, macOS asks for Bluetooth access. To use the earbuds for audio, pair them once in
 System Settings › Bluetooth.
 
+## CI/CD
+
+GitHub Actions, in `.github/workflows`:
+
+- **CI** (`ci.yml`), on every push to `main`, every pull request and weekly:
+  - *Security scan* (Ubuntu): [gitleaks](https://github.com/gitleaks/gitleaks) checks the whole git history for
+    exposed secrets (API keys, tokens, private keys, credentials in env-style variables), and
+    `scripts/check-forbidden-files.sh` fails if files like `.env`, certificates, provisioning profiles or
+    keychains are tracked.
+  - *Build and test* (macOS 26, Xcode 26.6): `swift test`, then `scripts/build-app.sh`; the zipped app is kept
+    as a workflow artifact for 7 days.
+- **Release** (`release.yml`), run by hand from *Actions › Release › Run workflow* with a version such as
+  `1.1.0`: checks the version format, that it runs on `main` and that the tag is new, runs the tests, builds
+  the app stamped with that version, and publishes the tag `v1.1.0` with a GitHub Release holding
+  `BudBridge-1.1.0.zip` and its SHA-256 checksum.
+
+Actions are pinned to full commit SHAs, jobs get read-only permissions (only the release job can write
+contents), workflow inputs never reach scripts directly, and Dependabot (`.github/dependabot.yml`) proposes
+updates weekly. Release builds are ad-hoc signed; notarization can be added once there's a Developer ID.
+
 ## Languages
 
 BudBridge is localized in **English** and **Brazilian Portuguese** and follows the Mac's language
