@@ -120,12 +120,19 @@ QCY's settings lists aren't included in this repository or the app. Like the pho
 
 ### CI/CD
 
-- **CI** ([`ci.yml`](.github/workflows/ci.yml)) runs on every pull request, every push to `main` and weekly:
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)) runs on every pull request, every push to `main` or `development`, and weekly:
   - **Security scan:** [gitleaks](https://github.com/gitleaks/gitleaks) checks the whole history for exposed secrets, and `scripts/check-forbidden-files.sh` fails if files such as `.env`, certificates or provisioning profiles are tracked.
   - **Build and test** on macOS 26: `swift test`, then `scripts/build-app.sh`. The zipped app is kept as a workflow artifact for 7 days.
 - **Release** ([`release.yml`](.github/workflows/release.yml)) runs by hand from **Actions › Release › Run workflow** with a version such as `1.1.0`. It checks the version and that it runs on `main`, runs the tests, builds the app with that version, and publishes the tag `v1.1.0` as a GitHub Release with the zip and its SHA-256 checksum.
 
-Actions are pinned to commit SHAs, jobs get read-only permissions (only the release job can write), and Dependabot proposes updates weekly. `main` is protected: changes land through pull requests that pass both CI jobs.
+Actions are pinned to commit SHAs, jobs get read-only permissions (only the release job can write), and Dependabot proposes updates weekly.
+
+### Branches
+
+- **`development`** collects the work for the next release: every pull request targets it.
+- **`main`** holds released code. When `development` is ready, it's merged into `main` with one pull request, and releases are published from `main`.
+
+Both branches are protected: changes land only through pull requests that pass both CI jobs, with no force pushes or deletion.
 
 <details>
 <summary><strong>Protocol notes</strong> (worked out from QCY's Android app, version 4.0.7)</summary>
