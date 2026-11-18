@@ -23,6 +23,43 @@ public struct EQFilter: Sendable, Hashable {
     }
 
     static let empty = Self(frequency: 0, gain: 0, q: 0, kind: .userBand)
+
+    /// The filter's gain in dB at a frequency, from the RBJ Audio EQ Cookbook biquads the earbuds use.
+    /// User bands behave as peaking filters.
+    public func response(at frequency: Double, sampleRate: Double = 48_000) -> Double {
+        guard gain != 0, q > 0, self.frequency > 0 else { return 0 }
+        let amplitude = pow(10, gain / 40)
+        let w0 = 2 * Double.pi * Double(self.frequency) / sampleRate
+        let alpha = sin(w0) / (2 * q)
+        let cosW0 = cos(w0)
+        let (numerator, denominator): ([Double], [Double])
+        switch kind {
+        case .lowShelf:
+            let root = 2 * amplitude.squareRoot() * alpha
+            let plus = amplitude + 1, minus = amplitude - 1
+            numerator = [
+                amplitude * (plus - minus * cosW0 + root),
+                2 * amplitude * (minus - plus * cosW0),
+                amplitude * (plus - minus * cosW0 - root),
+            ]
+            denominator = [
+                plus + minus * cosW0 + root,
+                -2 * (minus + plus * cosW0),
+                plus + minus * cosW0 - root,
+            ]
+        case .peaking, .userBand:
+            numerator = [1 + alpha * amplitude, -2 * cosW0, 1 - alpha * amplitude]
+            denominator = [1 + alpha / amplitude, -2 * cosW0, 1 - alpha / amplitude]
+        }
+        // |H(e^jw)| for H(z) = (b0 + b1 z⁻¹ + b2 z⁻²) / (a0 + a1 z⁻¹ + a2 z⁻²).
+        let w = 2 * Double.pi * frequency / sampleRate
+        func magnitude(_ coefficients: [Double]) -> Double {
+            let real = coefficients[0] + coefficients[1] * cos(w) + coefficients[2] * cos(2 * w)
+            let imaginary = -coefficients[1] * sin(w) - coefficients[2] * sin(2 * w)
+            return (real * real + imaginary * imaginary).squareRoot()
+        }
+        return 20 * log10(magnitude(numerator) / magnitude(denominator))
+    }
 }
 
 /// Payload of record 0x22 (typed) or 0x20 (untyped):

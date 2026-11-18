@@ -120,15 +120,37 @@ struct SoundViewModelTests {
         #expect(transport.commandFrames.count == 1)
     }
 
-    @Test func balanceSyncsAndCenters() {
+    @Test func slidersFollowTheSelectedPreset() throws {
+        let (viewModel, _, _) = makeViewModel()
+        let bass = try #require(viewModel.presets.first { $0.preset.name == "Heavy Bass" }).preset
+        let equalizer = try #require(viewModel.equalizer)
+        viewModel.choose(bass)
+        viewModel.syncGains()
+        #expect(viewModel.gains == bass.curve(onBands: equalizer.bands, range: equalizer.gainRange))
+        #expect(viewModel.equalizerCaption.contains("Heavy Bass"))
+
+        // Moving a slider turns the preset into a custom curve.
+        viewModel.gains[0] += 1
+        viewModel.applyCustom()
+        #expect(viewModel.isCustomSelected)
+        #expect(viewModel.equalizerCaption == "Changes apply when you release a slider.")
+    }
+
+    @Test func balanceSyncsAndResets() {
         let (viewModel, _, transport) = makeViewModel()
         viewModel.syncBalance()
         #expect(viewModel.balance == 50)
+        #expect(viewModel.isBalanceCentered)
+        #expect(viewModel.balanceDescription == "Centered")
         viewModel.balance = 70
         viewModel.applyBalance()
         #expect(transport.commandFrames.last == "FF03160146")
+        #expect(viewModel.balanceDescription == "Right 20")
+        viewModel.balance = 35
+        #expect(viewModel.balanceDescription == "Left 15")
         viewModel.centerBalance()
         #expect(transport.commandFrames.last == "FF03160132")
+        #expect(viewModel.isBalanceCentered)
     }
 }
 

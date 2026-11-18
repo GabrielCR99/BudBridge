@@ -87,7 +87,7 @@ Requer Xcode 26 (Swift 6.2) no macOS 14 ou posterior.
 ```sh
 ./scripts/build-app.sh          # gera build/BudBridge.app (assinado ad-hoc)
 open build/BudBridge.app
-swift test                      # 51 testes de protocolo, store e view models
+swift test                      # 54 testes de protocolo, store e view models
 swift scripts/make-icon.swift   # gera o ícone do app de novo (desenhado em vetor, sem imagens)
 ```
 

@@ -71,8 +71,25 @@ final class SoundViewModel {
     var bandLabels: [String] { equalizer?.bands.bandLabels ?? [] }
     var gainRange: ClosedRange<Double> { equalizer?.gainRange ?? -8...8 }
 
-    /// The custom curve the earbuds reported, used to (re)load the sliders.
-    var storedGains: [Double]? { equalizer?.selection(in: store.state)?.gains }
+    /// The curve the sliders show: the earbuds' custom curve, or the selected preset's curve.
+    var activeCurve: [Double]? {
+        guard let equalizer, let selection = equalizer.selection(in: store.state) else { return nil }
+        if let gains = selection.gains { return gains }
+        return selectedPreset?.curve(onBands: equalizer.bands, range: equalizer.gainRange)
+    }
+
+    /// Explains the sliders: a preset's curve is shown until a slider moves, which makes it custom.
+    var equalizerCaption: String {
+        if let selectedPreset, !isActiveCurveCustom {
+            return String(localized: "Showing \(selectedPreset.name). Moving a slider makes it a custom curve.")
+        }
+        return String(localized: "Changes apply when you release a slider.")
+    }
+
+    private var selectedPreset: EQPreset? {
+        guard let id = equalizer?.selection(in: store.state)?.id else { return nil }
+        return equalizer?.presets.first { $0.id == id }
+    }
 
     func choose(_ preset: EQPreset) {
         if preset.warning != nil { pendingPreset = preset } else { store.apply(preset: preset) }
@@ -92,11 +109,11 @@ final class SoundViewModel {
         applyCustom()
     }
 
-    /// Loads the sliders from the earbuds' custom curve, or resets them to the right band count.
+    /// Loads the sliders from the active curve, or resets them to the right band count.
     func syncGains() {
         let bands = equalizer?.bands.count ?? 0
-        if let stored = storedGains, stored.count == bands {
-            gains = stored
+        if let curve = activeCurve, curve.count == bands {
+            gains = curve
         } else if gains.count != bands {
             gains = Array(repeating: 0, count: bands)
         }
@@ -162,6 +179,15 @@ final class SoundViewModel {
 
     func applyBalance() {
         store.set(balance: Int(balance))
+    }
+
+    var isBalanceCentered: Bool { Int(balance) == 50 }
+
+    /// Where the balance leans, e.g. "Centered" or "Left 20".
+    var balanceDescription: String {
+        let offset = Int(balance) - 50
+        if offset == 0 { return String(localized: "Centered") }
+        return offset < 0 ? String(localized: "Left \(-offset)") : String(localized: "Right \(offset)")
     }
 
     func centerBalance() {
