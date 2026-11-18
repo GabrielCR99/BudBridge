@@ -24,12 +24,24 @@ final class HeadphonesStore {
     private(set) var isRestarting = false
     /// When the battery levels were last reported, by the link or by an advertisement.
     private(set) var batteryUpdated: Date?
+    /// The earbuds have reported their settings since they connected.
+    private(set) var hasReadSettings = false
     /// The model's settings list is being downloaded from QCY (it isn't bundled with the app).
     private(set) var isDownloadingPanel = false
     /// The last download failed (usually no internet); `retryPanelDownload()` tries again.
     private(set) var panelDownloadFailed = false
 
     var isReady: Bool { phase == .ready }
+    /// The screens are known (from the settings list) but the earbuds haven't reported their values yet:
+    /// they're still connecting, or connected and answering the first read.
+    var isLoadingSettings: Bool {
+        guard loading.isOn, panel != nil else { return false }
+        return switch phase {
+        case .starting, .searching, .connecting: true
+        case .ready: !hasReadSettings
+        case .bluetoothOff, .unauthorized, .paused: false
+        }
+    }
     var modelID: UInt16? { vendorID }
     var family: ModelFamily? { vendorID.map(ModelFamily.init) }
     var modelName: String { model?.name ?? String(localized: "QCY Earbuds") }
@@ -38,7 +50,7 @@ final class HeadphonesStore {
     /// always send 0 for the case, so the case slot is hidden for them.
     var reportsCaseBattery: Bool {
         guard let vendorID else { return false }
-        return state.battery?.chargingCase != nil || defaults.bool(forKey: Keys.caseBattery(vendorID))
+        return state.battery?.chargingCase != nil || remembered.reportsCaseBattery(vendorID)
     }
 
     /// Battery levels that may be out of date: not connected, and nothing heard for a while
@@ -55,38 +67,35 @@ final class HeadphonesStore {
 
     @ObservationIgnored private let transport: any ControlTransport
     @ObservationIgnored private let panels: any PanelProviding
-    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let remembered: RememberedEarbuds
     @ObservationIgnored private var peripheral: UUID?
     @ObservationIgnored private var vendorID: UInt16?
     @ObservationIgnored private var refreshedFirmware: String?
     @ObservationIgnored private var poller: Task<Void, Never>?
+    /// Placeholders are shown until the earbuds report their settings, for at most the loading timeout.
+    @ObservationIgnored private let loading: ExpiringFlag
     @ObservationIgnored private let log = Logger(subsystem: "io.github.gabrielcr99.BudBridge", category: "store")
 
-    private enum Keys {
-        static let peripheral = "peripheralID"
-        static let vendor = "vendorID"
-        static func caseBattery(_ vendorID: UInt16) -> String { "reportsCaseBattery.\(vendorID)" }
-    }
-
-    /// The last earbuds used, remembered across launches.
-    @ObservationIgnored
-    private var known: (peripheral: UUID, vendor: UInt16)? {
-        get {
-            guard let id = defaults.string(forKey: Keys.peripheral).flatMap(UUID.init(uuidString:)),
-                  let vendor = defaults.object(forKey: Keys.vendor) as? Int else { return nil }
-            return (id, UInt16(vendor))
-        }
-        set {
-            defaults.set(newValue?.peripheral.uuidString, forKey: Keys.peripheral)
-            defaults.set(newValue.map { Int($0.vendor) }, forKey: Keys.vendor)
-        }
-    }
-
-    init(transport: any ControlTransport, panels: any PanelProviding, defaults: UserDefaults = .standard) {
+    /// - Parameter loadingTimeout: How long to show the placeholder before explaining why the earbuds
+    ///   haven't connected (they may be in their case or out of range).
+    init(transport: any ControlTransport, panels: any PanelProviding, defaults: UserDefaults = .standard,
+         loadingTimeout: Duration = .seconds(8)) {
         self.transport = transport
         self.panels = panels
-        self.defaults = defaults
+        remembered = RememberedEarbuds(defaults: defaults)
+        loading = ExpiringFlag(timeout: loadingTimeout)
         transport.delegate = self
+        preloadKnownDevice()
+    }
+
+    /// Loads the remembered earbuds' model and cached settings list, so the sidebar and the page
+    /// layouts appear at once instead of when the earbuds connect.
+    private func preloadKnownDevice() {
+        guard let known = remembered.last, let cached = panels.panel(for: known.vendor) else { return }
+        vendorID = known.vendor
+        model = panels.model(known.vendor)
+        panel = cached
+        loading.turnOn()
     }
 
     // MARK: - Connection control
@@ -113,7 +122,8 @@ final class HeadphonesStore {
 
     /// Forgets the current earbuds and looks for others.
     func forget() {
-        known = nil
+        loading.turnOff()
+        remembered.last = nil
         transport.cancelConnection()
         peripheral = nil
         resetDevice()
@@ -289,7 +299,7 @@ final class HeadphonesStore {
 
     private func startDiscovery() {
         guard transport.radio == .poweredOn, phase != .paused else { return }
-        if let known, transport.connect(known.peripheral) {
+        if let known = remembered.last, transport.connect(known.peripheral) {
             vendorID = known.vendor
             peripheral = known.peripheral
             if phase != .ready { phase = .connecting }
@@ -310,6 +320,7 @@ final class HeadphonesStore {
 
     private func resetDevice() {
         state = DeviceState()
+        hasReadSettings = false
         panel = nil
         model = nil
         advertisement = nil
@@ -357,7 +368,7 @@ final class HeadphonesStore {
         state.battery = battery
         batteryUpdated = .now
         if battery.chargingCase != nil, let vendorID {
-            defaults.set(true, forKey: Keys.caseBattery(vendorID))
+            remembered.rememberCaseBattery(vendorID)
         }
     }
 
@@ -397,12 +408,12 @@ extension HeadphonesStore: ControlTransportDelegate {
         if let index = nearby.firstIndex(where: { $0.id == device.id }) { nearby[index] = device } else { nearby.append(device) }
 
         // Like the phone app, keep the battery fresh from our earbuds' broadcasts while not connected.
-        let isOurs = discovered.id == peripheral || discovered.id == known?.peripheral
+        let isOurs = discovered.id == peripheral || discovered.id == remembered.last?.peripheral
         if isOurs, !isReady { updateBattery(ad.battery) }
 
         guard phase == .searching || phase == .starting, device.isSupported else { return }
         // Connect automatically only to earbuds this Mac knows: the last ones used, or ones paired for audio.
-        let isKnown = known?.peripheral == discovered.id
+        let isKnown = remembered.last?.peripheral == discovered.id
         let isPaired = pairedAudioAddresses().contains { ad.matchesClassicAddress($0) }
         guard isKnown || isPaired else { return }
         adopt(ad)
@@ -410,7 +421,7 @@ extension HeadphonesStore: ControlTransportDelegate {
     }
 
     func transportDidConnect(_ id: UUID) {
-        if let vendorID { known = (id, vendorID) }
+        if let vendorID { remembered.last = (id, vendorID) }
     }
 
     func transportDidBecomeReady(_ id: UUID) {
@@ -419,6 +430,7 @@ extension HeadphonesStore: ControlTransportDelegate {
             if panel == nil { panel = panels.panel(for: vendorID) }
         }
         downloadPanelIfNeeded()
+        if hasReadSettings { loading.turnOff() } else { loading.turnOn() }
         phase = .ready
         isRestarting = false
         transport.stopScanning()
@@ -447,6 +459,10 @@ extension HeadphonesStore: ControlTransportDelegate {
         log.debug("RX \(uuid, privacy: .public) \(value.hex, privacy: .public)")
         switch uuid {
         case QCYGATT.settings:
+            if !hasReadSettings {
+                hasReadSettings = true
+                loading.turnOff()
+            }
             do { try state.apply(frame: value) } catch {
                 log.error("bad frame \(value.hex, privacy: .public): \(String(describing: error), privacy: .public)")
             }

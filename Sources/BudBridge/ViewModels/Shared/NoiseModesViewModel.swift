@@ -11,8 +11,9 @@ final class NoiseModesViewModel {
         self.store = store
     }
 
+    /// The model's noise controls once connected, or as a placeholder while the earbuds connect.
     var panel: NoiseControlPanel? {
-        store.isReady ? store.panel?.noiseControl : nil
+        store.isReady || store.isLoadingSettings ? store.panel?.noiseControl : nil
     }
 
     var title: String { panel?.title ?? "" }

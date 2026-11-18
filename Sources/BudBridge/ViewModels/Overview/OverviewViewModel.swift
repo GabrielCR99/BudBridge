@@ -21,7 +21,10 @@ final class OverviewViewModel {
 
     var showsNoiseControl: Bool { noise.panel != nil }
 
-    var showsQuickSettings: Bool { store.isReady && !switches.quickToggles.isEmpty }
+    var showsQuickSettings: Bool { (store.isReady || isLoading) && !switches.quickToggles.isEmpty }
+
+    /// The earbuds are connecting: noise control and quick settings are shown as placeholders.
+    var isLoading: Bool { store.isLoadingSettings }
 
     // MARK: - Settings list download
 

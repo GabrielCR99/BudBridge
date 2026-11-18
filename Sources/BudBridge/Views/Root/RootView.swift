@@ -27,17 +27,24 @@ struct RootView: View {
 
     @ViewBuilder
     private func detail(_ page: Page) -> some View {
-        if page.needsControl, !coordinator.root.isControlReady {
+        if page.needsControl, coordinator.root.isLoading {
+            content(page).skeleton()
+        } else if page.needsControl, !coordinator.root.isControlReady {
             ControlUnavailableView(viewModel: coordinator.root)
         } else {
-            switch page {
-            case .overview: OverviewView(viewModel: coordinator.overview)
-            case .noise: NoiseControlView(viewModel: coordinator.noiseControl)
-            case .sound: SoundView(viewModel: coordinator.sound)
-            case .controls: TouchControlsView(viewModel: coordinator.touchControls)
-            case .settings: SettingsView(viewModel: coordinator.settings)
-            case .connections: ConnectionsView(viewModel: coordinator.connections)
-            }
+            content(page)
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ page: Page) -> some View {
+        switch page {
+        case .overview: OverviewView(viewModel: coordinator.overview)
+        case .noise: NoiseControlView(viewModel: coordinator.noiseControl)
+        case .sound: SoundView(viewModel: coordinator.sound)
+        case .controls: TouchControlsView(viewModel: coordinator.touchControls)
+        case .settings: SettingsView(viewModel: coordinator.settings)
+        case .connections: ConnectionsView(viewModel: coordinator.connections)
         }
     }
 }
