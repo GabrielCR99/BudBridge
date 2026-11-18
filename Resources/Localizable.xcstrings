@@ -271,12 +271,22 @@
         }
       }
     },
-    "Center": {
+    "Center the balance between left and right": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Centralizar"
+            "value": "Centralizar o balanço entre esquerdo e direito"
+          }
+        }
+      }
+    },
+    "Centered": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centralizado"
           }
         }
       }
@@ -604,6 +614,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esquerdo"
+          }
+        }
+      }
+    },
+    "Left %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquerdo %lld"
           }
         }
       }
@@ -979,6 +999,16 @@
         }
       }
     },
+    "Reset": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redefinir"
+          }
+        }
+      }
+    },
     "Restarting…": {
       "localizations": {
         "pt-BR": {
@@ -995,6 +1025,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Direito"
+          }
+        }
+      }
+    },
+    "Right %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direito %lld"
           }
         }
       }
@@ -1075,6 +1115,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajustes"
+          }
+        }
+      }
+    },
+    "Showing %@. Moving a slider makes it a custom curve.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrando %@. Mover um controle transforma em uma curva personalizada."
           }
         }
       }

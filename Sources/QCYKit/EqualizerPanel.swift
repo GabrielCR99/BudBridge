@@ -105,6 +105,23 @@ public enum EQCommand: Sendable, Equatable {
     case characteristic(String, [UInt8])
 }
 
+extension EQPreset {
+    /// The preset's curve on the custom equalizer's bands, so the sliders can show it: the gains
+    /// themselves on graphic-EQ models, or the combined response of the filters on parametric ones.
+    /// Rounded to half a dB and clamped to `range`.
+    public func curve(onBands bands: [UInt16], range: ClosedRange<Double>) -> [Double]? {
+        let raw: [Double]
+        if filters.isEmpty {
+            guard gains.count == bands.count else { return nil }
+            raw = gains
+        } else {
+            raw = bands.map { band in filters.reduce(0) { $0 + $1.response(at: Double(band)) } }
+        }
+        // `+ 0` turns a rounded -0.0 into 0, so it doesn't display as "−0".
+        return raw.map { min(max(($0 * 2).rounded() / 2, range.lowerBound), range.upperBound) + 0 }
+    }
+}
+
 public struct EQPreset: Sendable, Hashable, Identifiable {
     public var id: UInt8
     public var name: String
