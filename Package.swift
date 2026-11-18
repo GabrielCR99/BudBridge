@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "BudBridge",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v14)],
     products: [
         .executable(name: "BudBridge", targets: ["BudBridge"]),
         .library(name: "QCYKit", targets: ["QCYKit"]),

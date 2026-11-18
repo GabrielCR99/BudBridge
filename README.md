@@ -17,7 +17,7 @@ Earbuds paired with this Mac connect automatically; other QCY earbuds nearby are
 
 > **New to the code?** Open [`docs/budbridge.html`](docs/budbridge.html) in a browser: an interactive walkthrough of the protocol and the Swift code, with Dart/Flutter comparisons.
 
-Requires macOS 26+ and Swift 6.2+. Built with Swift 6 language mode, main-actor default
+Runs on macOS 14 (Sonoma) or later, with Liquid Glass on macOS 26; builds with Swift 6.2+. Built with Swift 6 language mode, main-actor default
 isolation, `@Observable`, isolated protocol conformances, typed throws and Swift Testing.
 
 ## Build

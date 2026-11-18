@@ -14,7 +14,7 @@
 	<key>CFBundleShortVersionString</key><string>1.0</string>
 	<key>CFBundleVersion</key><string>1</string>
 	<key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
-	<key>LSMinimumSystemVersion</key><string>26.0</string>
+	<key>LSMinimumSystemVersion</key><string>14.0</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>BudBridge connects to your QCY earbuds to show battery and change noise control, equalizer and other settings.</string>
 	<key>NSHighResolutionCapable</key><true/>

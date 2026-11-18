@@ -119,7 +119,7 @@ struct ControlUnavailableView: View {
                 Text("The earbuds are free for the QCY app on your phone.")
             } actions: {
                 Button("Take Control") { control.resume() }
-                    .buttonStyle(.glassProminent)
+                    .prominentButtonStyle()
             }
         case .starting, .searching, .connecting, .ready:
             VStack(spacing: 20) {

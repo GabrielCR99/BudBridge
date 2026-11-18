@@ -117,7 +117,7 @@ struct BatteryCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)
-        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .glassCard(cornerRadius: 18)
     }
 
     private func tint(_ percent: Int) -> Color {
@@ -140,7 +140,7 @@ struct AudioConnectionRow: View {
                     Text(detail).font(.caption).foregroundStyle(.secondary)
                 }
             } icon: {
-                Image(systemName: audio.isConnected ? "headphones" : "headphones.slash")
+                Image(systemName: audio.isConnected ? "headphones" : Symbols.headphonesOff)
                     .foregroundStyle(audio.isConnected ? .green : .secondary)
             }
             Spacer()
@@ -152,7 +152,7 @@ struct AudioConnectionRow: View {
                 Button("Disconnect") { audio.disconnect() }
             } else {
                 Button("Connect") { audio.connect() }
-                    .buttonStyle(.glassProminent)
+                    .prominentButtonStyle()
             }
         }
     }
@@ -183,7 +183,7 @@ struct ControlConnectionRow: View {
             Spacer()
             if control.phase == .paused {
                 Button("Take Control") { control.resume() }
-                    .buttonStyle(.glassProminent)
+                    .prominentButtonStyle()
             } else if control.isReady {
                 Button("Release to Phone") { control.pause() }
                     .help("Disconnects the control link so the QCY phone app can connect.")

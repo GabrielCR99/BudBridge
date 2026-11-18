@@ -174,19 +174,8 @@ private struct PresetButton: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
         }
-        .buttonStyle(isSelected ? AnyButtonStyle(.glassProminent) : AnyButtonStyle(.glass))
+        .selectableButtonStyle(isSelected: isSelected)
     }
-}
-
-/// Type-erases the two glass styles so the selection can switch between them.
-private struct AnyButtonStyle: PrimitiveButtonStyle {
-    private let make: (Configuration) -> AnyView
-
-    init(_ style: some PrimitiveButtonStyle) {
-        make = { AnyView(style.makeBody(configuration: $0)) }
-    }
-
-    func makeBody(configuration: Configuration) -> some View { make(configuration) }
 }
 
 struct GraphicEQEditor: View {

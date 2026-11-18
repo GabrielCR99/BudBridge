@@ -3,8 +3,12 @@
 set -euo pipefail
 cd "${0:A:h}/.."
 
-swift build -c release --product BudBridge
-bin="$(swift build -c release --show-bin-path)/BudBridge"
+# Record the real SDK in the binary (SwiftPM writes the deployment target there), so macOS
+# treats BudBridge as a current app: e.g. the macOS 26 look rather than compatibility mode.
+sdk="$(xcrun --show-sdk-version)"
+link=(-Xlinker -platform_version -Xlinker macos -Xlinker 14.0 -Xlinker "$sdk")
+swift build -c release --product BudBridge "${link[@]}"
+bin="$(swift build -c release --product BudBridge --show-bin-path "${link[@]}")/BudBridge"
 
 app="build/BudBridge.app"
 rm -rf "$app"

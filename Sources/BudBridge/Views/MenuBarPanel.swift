@@ -86,7 +86,7 @@ struct MenuBarPanel: View {
             openWindow(id: "main")
             NSApp.activate()
         }
-        .buttonStyle(.glassProminent)
+        .prominentButtonStyle()
         .fixedSize()
     }
 
