@@ -29,6 +29,10 @@ struct OverviewView: View {
                     }
                 }
 
+                if control.isReady, control.panel == nil {
+                    SettingsDownloadNotice(control: control)
+                }
+
                 GroupBox("Connections") {
                     VStack(alignment: .leading, spacing: 12) {
                         AudioConnectionRow(audio: headphones.audio)
@@ -65,5 +69,29 @@ struct OverviewView: View {
         }
         let preferred = toggles.filter { [CommandID.lowLatency.rawValue, CommandID.dualDevice.rawValue].contains($0.stateCommand ?? 0) }
         return preferred.isEmpty ? Array(toggles.prefix(2)) : preferred
+    }
+}
+
+/// Shown while the connected model's settings list is downloaded from QCY, or when that failed.
+private struct SettingsDownloadNotice: View {
+    let control: ControlLink
+
+    var body: some View {
+        GroupBox {
+            HStack(spacing: 12) {
+                if control.panelDownloadFailed {
+                    Image(systemName: "exclamationmark.triangle").foregroundStyle(.orange)
+                    Text("Couldn't download the settings for \(control.modelName). BudBridge needs the internet once for each model.")
+                    Spacer()
+                    Button("Try Again") { control.retryPanelDownload() }
+                } else {
+                    ProgressView().controlSize(.small)
+                    Text("Downloading the settings for \(control.modelName)…")
+                    Spacer()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 4)
+        }
     }
 }

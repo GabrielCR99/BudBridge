@@ -1,0 +1,668 @@
+{
+ "controlPanel": {
+  "layouts": [
+   {
+    "voice": {
+     "name": "Modo de chamada",
+     "event": [
+      {
+       "left": "Atender/Desligar",
+       "name": "Clique duplos",
+       "right": "Atender/Desligar"
+      },
+      {
+       "left": "Rejeitar",
+       "name": "Prensa longa1.5S",
+       "right": "Rejeitar"
+      }
+     ]
+    },
+    "music": {
+     "name": "Modo de música",
+     "event": [
+      {
+       "left": {
+        "eventID": 1,
+        "default": "Sem efeito",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 0
+       },
+       "name": "Clique único",
+       "right": {
+        "eventID": 2,
+        "default": "Sem efeito",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 0
+       }
+      },
+      {
+       "left": {
+        "eventID": 3,
+        "default": "Reproduzir/Pausar",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 1
+       },
+       "name": "Clique duplos",
+       "right": {
+        "eventID": 4,
+        "default": "Reproduzir/Pausar",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 1
+       }
+      },
+      {
+       "left": {
+        "eventID": 5,
+        "default": "Assistente de voz",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 4
+       },
+       "name": "Clique triplos",
+       "right": {
+        "eventID": 6,
+        "default": "Próxima",
+        "list": [
+         {
+          "name": "Sem efeito",
+          "cmd": 0
+         },
+         {
+          "name": "Reproduzir/Pausar",
+          "cmd": 1
+         },
+         {
+          "name": "Anterior",
+          "cmd": 2
+         },
+         {
+          "name": "Próxima",
+          "cmd": 3
+         },
+         {
+          "name": "Assistente de voz",
+          "cmd": 4
+         },
+         {
+          "name": "Volume+",
+          "cmd": 5
+         },
+         {
+          "name": "Volume-",
+          "cmd": 6
+         },
+         {
+          "name": "Modo de jogo",
+          "cmd": 7
+         },
+         {
+          "name": "Modo ANC",
+          "cmd": 11
+         }
+        ],
+        "defaultFun": 3
+       }
+      }
+     ]
+    },
+    "name": "Personalização de função de botão do fone",
+    "type": 10,
+    "info": "Explicação deste ajuste."
+   },
+   {
+    "name": "Modo de cancelamento do ruído",
+    "info": "Explicação deste ajuste.",
+    "type": 9,
+    "modes": [
+     {
+      "name": "Cancelamento de ruídos",
+      "viewtype": 1,
+      "startcmdid": 65792,
+      "endcmdid": 131071,
+      "defaultcmd": 65794,
+      "items": [
+       {
+        "startcmdid": 66816,
+        "endcmdid": 66816,
+        "name": "Cancelamento de Ruído Adaptativo",
+        "viewtype": 3,
+        "defaultcmd": 66816
+       },
+       {
+        "name": "Interior",
+        "describe": "Explicação deste ajuste.",
+        "startcmdid": 65792,
+        "endcmdid": 65794
+       },
+       {
+        "name": "Viagens diárias",
+        "describe": "Explicação deste ajuste.",
+        "startcmdid": 66048,
+        "endcmdid": 66050
+       },
+       {
+        "name": "Barulho",
+        "describe": "Explicação deste ajuste.",
+        "startcmdid": 66304,
+        "endcmdid": 66306
+       },
+       {
+        "name": "Ruído contra o vento",
+        "describe": "Explicação deste ajuste.",
+        "startcmdid": 66560,
+        "endcmdid": 66560
+       }
+      ]
+     },
+     {
+      "startcmdid": 196864,
+      "endcmdid": 196870,
+      "name": "Transparente",
+      "voicecmdid": 196864,
+      "viewtype": 2,
+      "defaultcmd": 196868
+     },
+     {
+      "name": "Normal",
+      "viewtype": 3,
+      "startcmdid": 131072,
+      "endcmdid": 131072,
+      "defaultcmd": 131072
+     }
+    ]
+   },
+   {
+    "name": "Efeito sonoro",
+    "info": "Explicação deste ajuste.",
+    "type": 2,
+    "count": 10,
+    "mindb": 8,
+    "maxdb": 8,
+    "basedb": 0,
+    "character": "0000000B-0000-1000-8000-00805f9b34fb",
+    "q": "1,1,1,1,1,1,1,1,1,1",
+    "freq": "31,62,125,250,500,1000,2000,4000,8000,16000",
+    "eqs": "0,0,0,0,0,0,0,0,0,0",
+    "iitType": "0,0,0,0,0,0,0,0,0,0",
+    "volumelevel": 8,
+    "sys_eq": [
+     {
+      "name": "Som espacial",
+      "alarmMsg": "Alterar isso reinicia os fones.",
+      "alarmMsg_ios": "Alterar isso reinicia os fones.",
+      "mastergain": 0,
+      "eqs": "0,-8,-2,4,3,-3",
+      "q": "0.7,1,1.5,1,0.8,2",
+      "freq": "30,220,900,2800,12000,5300",
+      "iitType": "4,0,0,0,0,0",
+      "id": 10
+     },
+     {
+      "id": 1,
+      "name": "Predefinido",
+      "mastergain": 0,
+      "eqs": "0,-8,-2,4,3,-3",
+      "q": "0.7,1,1.5,1,0.8,2",
+      "freq": "30,220,900,2800,12000,5300",
+      "iitType": "4,0,0,0,0,0"
+     },
+     {
+      "id": 2,
+      "name": "Popular",
+      "mastergain": 0,
+      "eqs": "0,-8,3.5,3,-3,-3",
+      "q": "0.4,1,1,0.8,2,0.5",
+      "freq": "30,220,2800,12000,5300,60",
+      "iitType": "4,0,0,0,0,0"
+     },
+     {
+      "id": 3,
+      "name": "Bass pesados",
+      "mastergain": 0,
+      "eqs": "0,-8,1,8,-5,5",
+      "q": "0.7,1,1,0.8,2,0.6",
+      "freq": "30,220,2800,12000,5300,60",
+      "iitType": "4,0,0,0,0,0"
+     },
+     {
+      "id": 4,
+      "name": "Rock",
+      "mastergain": 0,
+      "eqs": "0,-10,2,3,-1,3",
+      "q": "0.7,1,1,0.8,2,0.6",
+      "freq": "30,220,2800,12000,5300,60",
+      "iitType": "4,0,0,0,0,0"
+     },
+     {
+      "id": 5,
+      "name": "Suave",
+      "mastergain": 0,
+      "eqs": "0,-8,1,1,-3,-2",
+      "q": "0.4,1,1,0.8,2,0.5",
+      "freq": "30,220,2800,12000,5300,60",
+      "iitType": "4,0,0,0,0,0"
+     },
+     {
+      "id": 6,
+      "name": "Clássico",
+      "mastergain": 0,
+      "eqs": "0,-5,1,1,-5,2",
+      "q": "0.7,1,1,0.8,2,0.6",
+      "freq": "30,220,2800,12000,5300,60",
+      "iitType": "4,0,0,0,0,0"
+     }
+    ]
+   },
+   {
+    "name": "Equilíbrio do canal de som",
+    "type": 8,
+    "info": "Explicação deste ajuste."
+   },
+   {
+    "itemKey": [
+     "57513030",
+     "57513031"
+    ],
+    "itemName": [
+     "Inglês",
+     "Chinês"
+    ],
+    "cmdid": 25,
+    "name": "Troca de Tom",
+    "hasValue": true,
+    "id": 1001,
+    "type": 1001,
+    "jump": "0",
+    "languages": "zh"
+   },
+   {
+    "itemName": {
+     "4": "Volume mais baixo",
+     "6": "Volume médio",
+     "8": "Volume mais alto",
+     "10": "Volume máximo"
+    },
+    "cmdid": 29,
+    "name": "Volume de notificação",
+    "hasValue": true,
+    "id": 103,
+    "type": 103,
+    "jump": "1"
+   },
+   {
+    "msg": "Explicação deste ajuste.",
+    "name": "Dê um aplido para dispositivo",
+    "hasValue": true,
+    "id": 101,
+    "type": 101,
+    "jump": "1"
+   },
+   {
+    "msg": "Explicação deste ajuste.",
+    "cmdid": 20,
+    "repeat": 50000,
+    "name": "Desligamento programado",
+    "hasValue": true,
+    "id": 102,
+    "type": 102,
+    "jump": "1"
+   },
+   {
+    "msg": "Explicação deste ajuste.",
+    "cmdid": 44,
+    "name": "Detecção de uso",
+    "hasValue": true,
+    "type": 104,
+    "subTitle": "Explicação deste ajuste.",
+    "valueTitle": "ANC",
+    "ancMsg": "O cancelamento de ruído acompanha o uso dos fones.",
+    "subItem": [
+     {
+      "name": "Desligado",
+      "cid": 0
+     },
+     {
+      "name": "Pausar e retomar",
+      "cid": 1
+     },
+     {
+      "name": "Só pausar",
+      "cid": 2
+     },
+     {
+      "name": "Pausar, retomar com os dois",
+      "cid": 3
+     }
+    ]
+   },
+   {
+    "itemName": {
+     "0500": "5Minuto",
+     "0A00": "10Minuto",
+     "1E00": "30Minuto",
+     "3C00": "60Minuto",
+     "FFFF": "Não desligue"
+    },
+    "itemKeyIos": [
+     "0500",
+     "0A00",
+     "1E00",
+     "3C00",
+     "FFFF"
+    ],
+    "itemNameIos": [
+     "5Minuto",
+     "10Minuto",
+     "30Minuto",
+     "60Minuto",
+     "Não desligue"
+    ],
+    "cmdid": 31,
+    "name": "Desconectar e desligar",
+    "hasValue": true,
+    "id": 103,
+    "type": 1000,
+    "jump": "1"
+   },
+   {
+    "type": 4,
+    "items": [
+     {
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "cmdid": 9,
+      "sub_items": [
+       {
+        "cmd": "FF03090101",
+        "boolVal": true
+       },
+       {
+        "cmd": "FF03090102",
+        "boolVal": false
+       }
+      ],
+      "id": 1,
+      "title": "Modo de jogo",
+      "type": 203,
+      "jump": "0"
+     },
+     {
+      "msg": "Explicação deste ajuste.",
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "cmdid": 16,
+      "sub_items": [
+       {
+        "cmd": "FF03100101",
+        "boolVal": true
+       },
+       {
+        "cmd": "FF03100102",
+        "boolVal": false
+       }
+      ],
+      "id": 1,
+      "title": "Modo de sono",
+      "type": 200,
+      "jump": "0"
+     },
+     {
+      "msg": "Alterar isso reinicia os fones.",
+      "msg_ios": "Alterar isso reinicia os fones.",
+      "msg_android": "Alterar isso reinicia os fones.",
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "cmdid": 35,
+      "sub_items": [
+       {
+        "cmd": "FF03230101",
+        "boolVal": true
+       },
+       {
+        "cmd": "FF03230102",
+        "boolVal": false
+       }
+      ],
+      "id": 1,
+      "title": "Interruptor de LDAC",
+      "type": 200,
+      "jump": "0"
+     },
+     {
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "cmdid": 36,
+      "sub_items": [
+       {
+        "cmd": "FF03240101",
+        "boolVal": true
+       },
+       {
+        "cmd": "FF03240102",
+        "boolVal": false
+       }
+      ],
+      "id": 1,
+      "title": "Conexão de dispositivos dupla",
+      "msg": "Alterar isso reinicia os fones.",
+      "msg_ios": "Alterar isso reinicia os fones.",
+      "type": 200,
+      "jump": "0"
+     },
+     {
+      "manufacturers": 6,
+      "id": 0,
+      "title": "Atualização de firmware",
+      "type": 1,
+      "jump": "0"
+     },
+     {
+      "msg": "Explicação deste ajuste.",
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "id": 3,
+      "cmd": "FF020100",
+      "title": "Redefinir as configurações para o padrão",
+      "type": 3,
+      "jump": "1"
+     },
+     {
+      "msg": "Explicação deste ajuste.",
+      "character": "00001001-0000-1000-8000-00805f9b34fb",
+      "id": 3,
+      "cmd": "FF020300",
+      "title": "Reinicialização de fábrica",
+      "type": 100,
+      "jump": "1"
+     }
+    ]
+   },
+   {
+    "latitude": "23.345",
+    "name": "Encontrar o fone",
+    "type": 3,
+    "info": "Explicação deste ajuste.",
+    "longitude": "116.102"
+   }
+  ]
+ }
+}

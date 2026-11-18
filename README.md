@@ -15,8 +15,6 @@ phone app, it builds its screens from each model's settings list ("control panel
 Earbuds paired with this Mac connect automatically; other QCY earbuds nearby are listed under
 **Connections**, where unsupported models say why.
 
-> **New to the code?** Open [`docs/budbridge.html`](docs/budbridge.html) in a browser: an interactive walkthrough of the protocol and the Swift code, with Dart/Flutter comparisons.
-
 Runs on macOS 14 (Sonoma) or later, with Liquid Glass on macOS 26; builds with Swift 6.2+. Built with Swift 6 language mode, main-actor default
 isolation, `@Observable`, isolated protocol conformances, typed throws and Swift Testing.
 
@@ -37,8 +35,8 @@ System Settings › Bluetooth.
 BudBridge is localized in **English** and **Brazilian Portuguese** and follows the Mac's language
 (System Settings › General › Language & Region; per-app under Applications). The app's own text lives in
 String Catalogs (`Resources/Localizable.xcstrings`, `Resources/InfoPlist.xcstrings`), compiled by
-`scripts/build-app.sh`. Settings-list labels come from QCY in the same language (`lang: pt`), bundled in
-`Resources/Panels/pt`; models without a Portuguese list fall back to English. Labels are tidied for display
+`scripts/build-app.sh`. Settings-list labels come from QCY in the same language (`lang: pt`); models
+without a Portuguese list fall back to English. Labels are tidied for display
 ("5Minute" → "5 minutes", "Prensa longa1.5S" → "Toque longo 1,5 segundos"). To try Portuguese once:
 `open build/BudBridge.app --args -AppleLanguages '(pt-BR)'`.
 
@@ -50,13 +48,15 @@ String Catalogs (`Resources/Localizable.xcstrings`, `Resources/InfoPlist.xcstrin
   earbuds' setting for Android sources.
 - **LDAC and dual device connection are mutually exclusive** on models that have both. Changing either one
   restarts the earbuds, and the app reconnects by itself.
-- **Supported models.** The 101 models bundled in `Resources/Panels` use GATT service `A001`. JieLi-based
+- **Supported models.** The 101 models listed in `Resources/Panels/catalog.json` use GATT service `A001`. JieLi-based
   models (91, e.g. QCY H3, MeloBuds N20/N30/N50) send the same commands over JieLi's own transport and
   aren't supported. Not available yet: timed power-off, fit test, firmware updates, and the equalizer on
   the 9 "ZR" models. Only the MeloBuds Pro has been tested on real hardware.
-- **Settings lists.** The app ships a snapshot of QCY's lists and, after connecting, fetches the one for
-  the earbuds' firmware from `api.watch.qcy.com` (as the phone app does), cached in
-  `~/Library/Application Support/BudBridge/Panels`.
+- **Settings lists.** QCY's settings lists are not included in this repository or the app. Like the phone
+  app, BudBridge downloads the list for the connected model and firmware from `api.watch.qcy.com` and caches
+  it in `~/Library/Application Support/BudBridge/Panels`, so it needs the internet once for each model.
+  The tests use small fixtures (`Tests/Fixtures/Panels`) that keep the lists' structure and numbers but
+  replace their texts with our own wording.
 
 ## Protocol (reverse-engineered from `com.qcymall.googleearphonesetup` 4.0.7)
 
@@ -93,8 +93,14 @@ are written as `1` = on, `2` = off and read back as `1` and `0`.
 EQ presets and option labels come from the model's control panel
 (`api.watch.qcy.com/product/findControlPanels`, `modelId=19786` = advertised vendor ID `0x4D4A`).
 
+## License
+
+BudBridge's source code is released under the [MIT License](LICENSE). The license covers the code in this
+repository only; it doesn't cover QCY's trademarks, apps or settings lists, which aren't included.
+
 ## Disclaimer
 
 BudBridge is an independent project. It is not affiliated with, endorsed by, or sponsored by QCY.
 "QCY" and "MeloBuds" are trademarks of their owner and are used here only to describe compatibility.
-The protocol was worked out from the official Android app and the author's own earbuds, for interoperability.
+The protocol was worked out from the official Android app and the author's own earbuds, for
+interoperability. No QCY code, apps or settings lists are redistributed.

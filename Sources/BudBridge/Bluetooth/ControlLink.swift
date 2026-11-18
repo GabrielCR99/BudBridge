@@ -34,6 +34,10 @@ final class ControlLink: NSObject {
     private(set) var nearby: [Nearby] = []
     /// Set while a change (LDAC, dual device, spatial EQ…) restarts the earbuds.
     private(set) var isRestarting = false
+    /// The model's settings list is being downloaded from QCY (it isn't bundled with the app).
+    private(set) var isDownloadingPanel = false
+    /// The last download failed (usually no internet); `retryPanelDownload()` tries again.
+    private(set) var panelDownloadFailed = false
     /// Whether this model has ever reported a charging-case level. Some (like the MeloBuds Pro)
     /// always send 0 for the case, so the case slot is hidden for them.
     var reportsCaseBattery: Bool {
@@ -332,6 +336,7 @@ final class ControlLink: NSObject {
         model = panels.model(ad.vendorID)
         panel = panels.panel(for: ad.vendorID)
         if state.battery == nil { updateBattery(ad.battery) }
+        downloadPanelIfNeeded()
     }
 
     private func resetDevice() {
@@ -355,6 +360,7 @@ final class ControlLink: NSObject {
             if model == nil { model = panels.model(vendorID) }
             if panel == nil { panel = panels.panel(for: vendorID) }
         }
+        downloadPanelIfNeeded()
         phase = .ready
         isRestarting = false
         central.stopScan()
@@ -367,6 +373,31 @@ final class ControlLink: NSObject {
                 try? await Task.sleep(for: .seconds(60))
                 guard let self, let c = self.characteristics[QCYGATT.battery] else { continue }
                 self.peripheral?.readValue(for: c)
+            }
+        }
+    }
+
+    /// Tries the settings-list download again after a failure.
+    func retryPanelDownload() {
+        panelDownloadFailed = false
+        downloadPanelIfNeeded()
+    }
+
+    /// Downloads the latest settings list when none is cached yet, so the screens can appear before
+    /// the firmware is known. The firmware-specific list follows in `refreshPanel(firmware:)`.
+    private func downloadPanelIfNeeded() {
+        guard panel == nil, !isDownloadingPanel, let vendorID, panels.isSupported(vendorID) else { return }
+        isDownloadingPanel = true
+        panelDownloadFailed = false
+        Task {
+            let fresh = await panels.refresh(vendorID: vendorID, firmware: state.firmware?.left)
+            isDownloadingPanel = false
+            guard self.vendorID == vendorID else { return }
+            if let fresh {
+                panel = fresh
+                refresh()
+            } else {
+                panelDownloadFailed = panel == nil
             }
         }
     }

@@ -2,11 +2,12 @@ import Foundation
 import Testing
 @testable import QCYKit
 
-/// Bundled settings lists (`Resources/Panels/<modelID>.json`).
+/// Settings-list fixtures (`Tests/Fixtures/Panels/<modelID>.json`): the structure and numbers of real QCY
+/// lists, with sentence-length texts replaced by our own wording. QCY's lists aren't redistributed.
 enum Panels {
     static let directory = URL(filePath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        .appending(path: "Resources/Panels")
+        .appending(path: "Tests/Fixtures/Panels")
 
     static func load(_ id: Int) throws -> ControlPanel {
         try ControlPanel(json: Data(contentsOf: directory.appending(path: "\(id).json")))
@@ -202,9 +203,9 @@ struct PanelTextTests {
 }
 
 struct OtherModelTests {
-    @Test func everyBundledPanelParses() throws {
+    @Test func everyFixtureParses() throws {
         let ids = Panels.supportedIDs
-        #expect(ids.count == 101)
+        #expect(ids.count == 4)
         for id in ids {
             let panel = try Panels.load(id)
             #expect(panel.equalizer != nil || panel.touch != nil || !panel.settings.isEmpty, "model \(id) has no controls")

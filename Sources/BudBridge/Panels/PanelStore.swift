@@ -23,9 +23,9 @@ struct ModelInfo: Sendable, Decodable, Identifiable {
 
 /// Model catalog and settings lists ("control panels").
 ///
-/// Lookup order mirrors the Android app: a copy fetched from QCY for this firmware (cached on disk),
-/// else the snapshot bundled with the app. Lists come in the app's language: QCY serves Portuguese
-/// translations for `lang: pt`, and English otherwise.
+/// Like the Android app, BudBridge downloads each model's list from QCY when it first meets the
+/// model, and caches it on disk. QCY's lists aren't redistributed with the app. Lists come in the
+/// app's language: QCY serves Portuguese translations for `lang: pt`, and English otherwise.
 final class PanelStore {
     /// `"pt"` when BudBridge runs in Portuguese, else `"en"`.
     let language = Bundle.main.preferredLocalizations.first?.hasPrefix("pt") == true ? "pt" : "en"
@@ -45,24 +45,26 @@ final class PanelStore {
         models[vendorID]?.supported == true && !ModelFamily(vendorID).isJieLi
     }
 
-    /// Cached or bundled panel; no network.
+    /// The cached list for this model, if it was downloaded before; no network.
     func panel(for vendorID: UInt16) -> ControlPanel? {
-        // QCY has no Portuguese list for a few models; those fall back to English.
-        var sources: [(URL?, String)] = [(cacheURL(vendorID), language)]
-        if language == "pt" {
-            sources.append((Bundle.main.url(forResource: "\(vendorID)", withExtension: "json", subdirectory: "Panels/pt"), "pt"))
-        }
-        sources.append((Bundle.main.url(forResource: "\(vendorID)", withExtension: "json", subdirectory: "Panels"), "en"))
-        for (url, language) in sources {
-            if let url, let data = try? Data(contentsOf: url), let panel = try? ControlPanel(json: data, language: language) {
+        for language in Set([language, "en"]).sorted(by: { first, _ in first == self.language }) {
+            if let url = cacheURL(vendorID, language: language), let data = try? Data(contentsOf: url),
+               let panel = try? ControlPanel(json: data, language: language) {
                 return panel
             }
         }
         return nil
     }
 
-    /// Fetches the panel QCY serves for this firmware and caches it. Returns `nil` on any failure.
-    func refresh(vendorID: UInt16, firmware: String) async -> ControlPanel? {
+    /// Downloads the list QCY serves for this firmware (the latest one when `nil`) and caches it.
+    /// Returns `nil` on any failure; QCY has no Portuguese list for a few models, which then come in English.
+    func refresh(vendorID: UInt16, firmware: String?) async -> ControlPanel? {
+        if let panel = await download(vendorID: vendorID, firmware: firmware, language: language) { return panel }
+        return language == "en" ? nil : await download(vendorID: vendorID, firmware: firmware, language: "en")
+    }
+
+    private func download(vendorID: UInt16, firmware: String?, language: String) async -> ControlPanel? {
+        let firmware = firmware ?? "99.99.99"
         var request = URLRequest(url: URL(string: "https://api.watch.qcy.com/product/findControlPanels")!)
         request.httpMethod = "POST"
         request.timeoutInterval = 15
@@ -75,11 +77,11 @@ final class PanelStore {
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
             let panel = try ControlPanel(json: data, language: language)
-            if let url = cacheURL(vendorID) {
+            if let url = cacheURL(vendorID, language: language) {
                 try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                 try data.write(to: url, options: .atomic)
             }
-            log.info("refreshed \(self.language, privacy: .public) panel for model \(vendorID) firmware \(firmware, privacy: .public)")
+            log.info("downloaded \(language, privacy: .public) panel for model \(vendorID) firmware \(firmware, privacy: .public)")
             return panel
         } catch {
             log.notice("panel refresh failed for model \(vendorID): \(error.localizedDescription, privacy: .public)")
@@ -87,7 +89,7 @@ final class PanelStore {
         }
     }
 
-    private func cacheURL(_ vendorID: UInt16) -> URL? {
+    private func cacheURL(_ vendorID: UInt16, language: String) -> URL? {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
             .appending(path: "BudBridge/Panels/\(language)/\(vendorID).json")
     }

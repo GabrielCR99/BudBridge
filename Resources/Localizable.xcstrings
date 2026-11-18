@@ -361,6 +361,16 @@
         }
       }
     },
+    "Couldn't download the settings for %@. BudBridge needs the internet once for each model.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível baixar os ajustes de %@. O BudBridge precisa de internet uma vez para cada modelo."
+          }
+        }
+      }
+    },
     "Couldn't start the connection (%@).": {
       "localizations": {
         "pt-BR": {
@@ -447,6 +457,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desconecta o controle para que o app QCY do celular possa se conectar."
+          }
+        }
+      }
+    },
+    "Downloading the settings for %@…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixando os ajustes de %@…"
           }
         }
       }
@@ -1165,6 +1185,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Controles de Toque"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tentar Novamente"
           }
         }
       }
