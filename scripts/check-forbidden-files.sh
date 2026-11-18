@@ -1,8 +1,8 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 # Fails if files that usually hold secrets or signing material are tracked by git.
 # Run by CI next to the gitleaks secret scan; safe to run locally too.
 set -euo pipefail
-cd "${0:A:h}/.."
+cd "$(dirname "$0")/.."
 
 patterns=(
   '(^|/)\.env(\..+)?$'              # environment files (.env, .env.local, …)
