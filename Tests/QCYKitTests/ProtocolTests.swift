@@ -226,6 +226,33 @@ struct OtherModelTests {
         #expect(eq.selection(in: state)?.gains == [3, 0, 0, 0, 0, 0, 0, 0, 0, -2])
     }
 
+    @Test func presetCurvesOnTheCustomBands() throws {
+        // Graphic EQ (QCY T5): a preset's gains are already per band.
+        let graphic = try #require(try Panels.load(19745).equalizer)
+        let pop = try #require(graphic.presets.first { $0.name == "Pop" })
+        #expect(pop.curve(onBands: graphic.bands, range: graphic.gainRange) == [-6, 5, -3, -2, 5, 4, -4, -3, 6, 4])
+
+        // Parametric EQ (MeloBuds Pro): the filters' combined response at each band.
+        let eq = try #require(try Panels.load(Panels.meloBudsPro).equalizer)
+        let standard = try #require(eq.presets.first { $0.name == "Default" })
+        #expect(standard.curve(onBands: eq.bands, range: eq.gainRange) == [0, -1, -3.5, -7.5, -2.5, -1.5, 2.5, 1.5, 1.5, 1.5])
+        let bass = try #require(eq.presets.first { $0.name == "Heavy Bass" })
+        let curve = try #require(bass.curve(onBands: eq.bands, range: eq.gainRange))
+        #expect(curve[1] > 3)
+        #expect(curve[3] < -5)
+        #expect(curve.allSatisfy { eq.gainRange.contains($0) && !($0 == 0 && $0.sign == .minus) })
+    }
+
+    @Test func peakingFilterResponse() {
+        let peak = EQFilter(frequency: 1000, gain: 6, q: 1, kind: .peaking)
+        #expect(abs(peak.response(at: 1000) - 6) < 0.01)
+        #expect(abs(peak.response(at: 20)) < 0.1)
+        #expect(EQFilter(frequency: 1000, gain: 0, q: 1, kind: .peaking).response(at: 1000) == 0)
+        let shelf = EQFilter(frequency: 100, gain: 6, q: 0.7, kind: .lowShelf)
+        #expect(abs(shelf.response(at: 20) - 6) < 0.3)
+        #expect(abs(shelf.response(at: 10_000)) < 0.1)
+    }
+
     @Test func perGestureTouchCharacteristics() throws {
         // QCY T2C: one characteristic per gesture, actions written as their own bytes.
         let touch = try #require(try Panels.load(18863).touch)

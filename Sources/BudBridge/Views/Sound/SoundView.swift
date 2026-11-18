@@ -26,7 +26,7 @@ struct SoundView: View {
         }
         .formStyle(.grouped)
         .onAppear { viewModel.syncGains() }
-        .onChange(of: viewModel.storedGains) { viewModel.syncGains() }
+        .onChange(of: viewModel.activeCurve) { viewModel.syncGains() }
         .alert(viewModel.namingTitle, isPresented: Binding(
             get: { viewModel.naming != nil },
             set: { if !$0 { viewModel.naming = nil } }
@@ -108,7 +108,7 @@ struct SoundView: View {
             HStack {
                 Button("Flat") { viewModel.flatten() }
                 Spacer()
-                Text("Changes apply when you release a slider.")
+                Text(viewModel.equalizerCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -170,18 +170,60 @@ struct GraphicEQEditor: View {
     }
 }
 
-private struct VerticalSlider: View {
+/// A native vertical slider. A rotated SwiftUI `Slider` only looks vertical on macOS: its AppKit
+/// control still tracks the pointer horizontally, so dragging up and down doesn't move it.
+private struct VerticalSlider: NSViewRepresentable {
     @Binding var value: Double
     let range: ClosedRange<Double>
+    var step = 0.5
     var onEditingChanged: (Bool) -> Void
 
-    var body: some View {
-        GeometryReader { proxy in
-            Slider(value: $value, in: range, step: 0.5, onEditingChanged: onEditingChanged)
-                .labelsHidden()
-                .frame(width: proxy.size.height)
-                .rotationEffect(.degrees(-90))
-                .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+    func makeNSView(context: Context) -> NSSlider {
+        let slider = NSSlider(value: value, minValue: range.lowerBound, maxValue: range.upperBound,
+                              target: context.coordinator, action: #selector(Coordinator.valueChanged(_:)))
+        slider.isVertical = true
+        slider.isContinuous = true
+        slider.setContentHuggingPriority(.defaultLow, for: .vertical)
+        slider.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        return slider
+    }
+
+    func updateNSView(_ slider: NSSlider, context: Context) {
+        context.coordinator.parent = self
+        slider.minValue = range.lowerBound
+        slider.maxValue = range.upperBound
+        // Don't fight the pointer while the user drags.
+        if !context.coordinator.isEditing, slider.doubleValue != value {
+            slider.doubleValue = value
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject {
+        var parent: VerticalSlider
+        private(set) var isEditing = false
+
+        init(parent: VerticalSlider) {
+            self.parent = parent
+        }
+
+        @objc func valueChanged(_ slider: NSSlider) {
+            let step = parent.step
+            parent.value = (slider.doubleValue / step).rounded() * step
+            // A drag reports editing until the mouse goes up; keyboard and VoiceOver changes commit at once.
+            let type = NSApp.currentEvent?.type
+            let isTracking = type == .leftMouseDown || type == .leftMouseDragged
+            if isTracking, !isEditing {
+                isEditing = true
+                parent.onEditingChanged(true)
+            } else if !isTracking {
+                if !isEditing { parent.onEditingChanged(true) }
+                isEditing = false
+                parent.onEditingChanged(false)
+            }
         }
     }
 }
@@ -196,8 +238,13 @@ private struct BalanceSlider: View {
                 if !editing { viewModel.applyBalance() }
             }
             Text("R").foregroundStyle(.secondary)
-            Button("Center") { viewModel.centerBalance() }
-                .disabled(Int(viewModel.balance) == 50)
+            Text(viewModel.balanceDescription)
+                .font(.callout.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(minWidth: 64, alignment: .trailing)
+            Button("Reset", systemImage: "arrow.counterclockwise") { viewModel.centerBalance() }
+                .help("Center the balance between left and right")
+                .disabled(viewModel.isBalanceCentered)
         }
         .onAppear { viewModel.syncBalance() }
         .onChange(of: viewModel.storedBalance) { viewModel.syncBalance() }
