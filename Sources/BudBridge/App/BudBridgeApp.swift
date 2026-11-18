@@ -11,6 +11,9 @@ struct BudBridgeApp: App {
         }
         .windowToolbarStyle(.unified)
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About BudBridge") { AboutPanel.show() }
+            }
             CommandGroup(after: .toolbar) {
                 Button("Refresh from Earbuds") { coordinator.root.refresh() }
                     .keyboardShortcut("r")
