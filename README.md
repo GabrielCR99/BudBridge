@@ -81,7 +81,7 @@ Requires Xcode 26 (Swift 6.2) on macOS 14 or later.
 ```sh
 ./scripts/build-app.sh          # builds build/BudBridge.app (ad-hoc signed)
 open build/BudBridge.app
-swift test                      # 48 protocol, store and view-model tests
+swift test                      # 51 protocol, store and view-model tests
 swift scripts/make-icon.swift   # regenerates the app icon (vector-drawn, no assets)
 ```
 
@@ -100,7 +100,8 @@ Sources/
     ├── Services/      Model layer, no SwiftUI
     │   ├── HeadphonesStore   Single source of truth: state, settings list, commands
     │   ├── Bluetooth/        BLEConnection (CoreBluetooth), AudioConnection (IOBluetooth), FindTone
-    │   └── Storage/          PanelRepository (settings lists), EffectLibrary (saved EQ curves)
+    │   └── Storage/          PanelRepository (settings lists), EffectLibrary (saved EQ curves),
+    │                         RememberedEarbuds (last earbuds used)
     ├── ViewModels/    One per screen; Foundation and QCYKit only
     └── Views/         SwiftUI views that render view-model values and forward actions
 ```

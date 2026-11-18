@@ -608,6 +608,16 @@
         }
       }
     },
+    "Loading": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando"
+          }
+        }
+      }
+    },
     "Looking for QCY Earbuds…": {
       "localizations": {
         "pt-BR": {

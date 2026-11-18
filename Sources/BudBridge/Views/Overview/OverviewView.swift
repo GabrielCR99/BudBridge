@@ -21,6 +21,7 @@ struct OverviewView: View {
                         NoiseModePicker(viewModel: viewModel.noise)
                             .padding(.vertical, 4)
                     }
+                    .skeleton(viewModel.isLoading)
                 }
 
                 if viewModel.showsSettingsDownload {
@@ -61,6 +62,7 @@ struct OverviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 4)
                     }
+                    .skeleton(viewModel.isLoading)
                 }
             }
             .padding(24)

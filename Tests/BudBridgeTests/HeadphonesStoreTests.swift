@@ -135,6 +135,42 @@ struct HeadphonesStoreTests {
         #expect(!store.panelDownloadFailed)
     }
 
+    @Test func relaunchShowsPlaceholdersUntilTheEarbudsReportTheirSettings() {
+        let (store, transport) = Fixtures.relaunchedStore()
+        #expect(store.panel != nil)
+        #expect(store.modelName == "QCY MeloBuds Pro")
+        #expect(store.isLoadingSettings)
+
+        transport.powerOn()
+        #expect(store.phase == .connecting)
+        #expect(store.isLoadingSettings)
+
+        transport.finishConnecting(Fixtures.meloBudsID)
+        #expect(store.isReady)
+        #expect(store.isLoadingSettings)
+
+        transport.notify(QCYGATT.settings, Fixtures.fullSettings)
+        #expect(!store.isLoadingSettings)
+    }
+
+    @Test func placeholdersGiveWayWhenTheEarbudsDontConnect() async throws {
+        let (store, transport) = Fixtures.relaunchedStore(loadingTimeout: .milliseconds(30))
+        transport.powerOn()
+        try await waitUntil { !store.isLoadingSettings }
+        #expect(store.phase == .connecting)
+    }
+
+    @Test func noPlaceholdersWithoutRememberedEarbudsOrWithBluetoothOff() {
+        let (fresh, _, _) = Fixtures.makeStore()
+        #expect(fresh.panel == nil)
+        #expect(!fresh.isLoadingSettings)
+
+        let (store, transport) = Fixtures.relaunchedStore()
+        transport.radio = .poweredOff
+        transport.delegate?.transportDidUpdateRadio(.poweredOff)
+        #expect(!store.isLoadingSettings)
+    }
+
     private func waitUntil(_ condition: () -> Bool) async throws {
         for _ in 0..<100 where !condition() {
             try await Task.sleep(for: .milliseconds(10))

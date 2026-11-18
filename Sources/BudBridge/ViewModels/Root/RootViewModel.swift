@@ -31,12 +31,15 @@ final class RootViewModel {
     }
 
     var title: String {
-        store.isReady ? store.modelName : "BudBridge"
+        store.isReady || store.isLoadingSettings ? store.modelName : "BudBridge"
     }
 
     var status: LinkStatus { LinkStatus(store: store) }
 
     var isControlReady: Bool { store.isReady }
+
+    /// The earbuds are connecting and their pages are shown as placeholders.
+    var isLoading: Bool { store.isLoadingSettings }
 
     var unavailable: Unavailable {
         switch store.phase {
