@@ -21,6 +21,29 @@
 
 BudBridge was built and tested with the **QCY MeloBuds Pro**. Like QCY's phone app, it builds its screens from each model's settings list, so it works with **101 QCY models** that use the same Bluetooth LE protocol.
 
+<p align="center">
+  <img src="Screenshots/1-overview.png" width="800" alt="Overview: battery for each earbud, noise control mode, connections and quick settings">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="Screenshots/3-sound.png" alt="Sound: EQ presets, saved sound effects, a 10-band custom equalizer and balance"></td>
+    <td width="50%"><img src="Screenshots/5-settings.png" alt="Settings: prompt language and volume, auto power-off, gaming mode, LDAC, dual device connection and wear detection"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Sound</b>: presets, saved effects and a custom EQ</td>
+    <td align="center"><b>Settings</b>: switches, wear detection and more</td>
+  </tr>
+  <tr>
+    <td><img src="Screenshots/4-controls.png" alt="Touch Controls: actions for each tap on the left and right earbuds"></td>
+    <td><img src="Screenshots/2-noise.png" alt="Noise Control: noise canceling, transparency with level and vocal enhancement, and normal mode"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Touch Controls</b>: what each tap does</td>
+    <td align="center"><b>Noise Control</b>: modes, levels and scenes</td>
+  </tr>
+</table>
+
 ## Features
 
 - **Connection:** connect or disconnect the earbuds' audio from this Mac in one click. Earbuds paired with this Mac connect automatically, and other QCY earbuds nearby appear under **Connections**.
