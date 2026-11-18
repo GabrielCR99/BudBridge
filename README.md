@@ -17,6 +17,10 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
 </p>
 
+<p align="center">
+  <strong>English</strong> · <a href="README.pt-BR.md">Português (Brasil)</a>
+</p>
+
 ---
 
 BudBridge was built and tested with the **QCY MeloBuds Pro**. Like QCY's phone app, it builds its screens from each model's settings list, so it works with **101 QCY models** that use the same Bluetooth LE protocol.
