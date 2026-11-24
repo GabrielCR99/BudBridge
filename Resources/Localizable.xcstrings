@@ -111,6 +111,16 @@
         }
       }
     },
+    "Allow BudBridge in System Settings to open it at login.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permita o BudBridge nos Ajustes do Sistema para abri-lo ao iniciar sessão."
+          }
+        }
+      }
+    },
     "Allow this app in System Settings › Privacy & Security › Bluetooth.": {
       "localizations": {
         "pt-BR": {
@@ -227,6 +237,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "BudBridge"
+          }
+        }
+      }
+    },
+    "BudBridge waits in the background, so it can notice your earbuds connecting.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O BudBridge fica em segundo plano para perceber quando seus fones se conectam."
           }
         }
       }
@@ -377,6 +397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Controles"
+          }
+        }
+      }
+    },
+    "Couldn't change the login item: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível alterar o item de início: %@"
           }
         }
       }
@@ -818,12 +848,42 @@
         }
       }
     },
+    "Open Login Items…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Itens de Início…"
+          }
+        }
+      }
+    },
     "Open Privacy Settings": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir Ajustes de Privacidade"
+          }
+        }
+      }
+    },
+    "Open at login": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir ao iniciar sessão"
+          }
+        }
+      }
+    },
+    "Open the window when earbuds connect": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir a janela quando os fones se conectarem"
           }
         }
       }
@@ -1119,6 +1179,16 @@
         }
       }
     },
+    "Show only while earbuds are connected": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar só enquanto os fones estiverem conectados"
+          }
+        }
+      }
+    },
     "Showing %@. Moving a slider makes it a custom curve.": {
       "localizations": {
         "pt-BR": {
@@ -1385,6 +1455,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detecção de uso"
+          }
+        }
+      }
+    },
+    "When your earbuds disconnect, BudBridge closes its window and leaves the menu bar and the Dock. It comes back when they reconnect, or when you open it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando seus fones se desconectam, o BudBridge fecha a janela e sai da barra de menus e do Dock. Ele volta quando os fones se reconectam ou quando você o abre."
           }
         }
       }

@@ -1,8 +1,11 @@
+import AppKit
 import SwiftUI
 
 @main
 struct BudBridgeApp: App {
-    @State private var coordinator = AppCoordinator()
+    @NSApplicationDelegateAdaptor private var delegate: AppDelegate
+
+    private var coordinator: AppCoordinator { delegate.coordinator }
 
     var body: some Scene {
         Window("BudBridge", id: "main") {
@@ -20,24 +23,60 @@ struct BudBridgeApp: App {
             }
         }
 
-        MenuBarExtra {
+        MenuBarExtra(isInserted: menuBarItemShown) {
             MenuBarPanel(viewModel: coordinator.menuBar)
         } label: {
-            MenuBarLabel(viewModel: coordinator.menuBar.battery)
+            MenuBarLabel(viewModel: coordinator.menuBar.battery, presence: coordinator.presence)
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            GeneralSettingsView(viewModel: coordinator.general)
+        }
+    }
+
+    /// The item follows `AppPresence`; removing it by ⌘-dragging lasts until the next change.
+    private var menuBarItemShown: Binding<Bool> {
+        Binding(get: { coordinator.presence.isVisible }, set: { _ in })
+    }
+}
+
+/// Owns the coordinator, so it exists before launch finishes, and tells `AppPresence` how
+/// BudBridge was launched.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    let coordinator = AppCoordinator()
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        coordinator.presence.didFinishLaunching(atLogin: AppKitPresenceHost.isLaunchingAtLogin)
+    }
+
+    /// BudBridge keeps running without a window, so it notices the earbuds connecting.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 }
 
 private struct MenuBarLabel: View {
     let viewModel: BatteryViewModel
+    let presence: AppPresence
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        if let level = viewModel.lowestBud {
-            Label("\(level)%", systemImage: "earbuds")
-                .labelStyle(.titleAndIcon)
-        } else {
-            Image(systemName: "earbuds")
+        Group {
+            if let level = viewModel.lowestBud {
+                Label("\(level)%", systemImage: "earbuds")
+                    .labelStyle(.titleAndIcon)
+            } else {
+                Image(systemName: "earbuds")
+            }
+        }
+        // The label is the one view that's always around while BudBridge is visible, so it
+        // opens the window when the earbuds connect.
+        .onChange(of: presence.wantsWindow, initial: true) { _, wantsWindow in
+            guard wantsWindow else { return }
+            presence.windowRequestHandled()
+            openWindow(id: "main")
+            NSApp.activate()
         }
     }
 }

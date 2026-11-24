@@ -61,6 +61,7 @@ O BudBridge foi criado e testado com o **QCY MeloBuds Pro**. Assim como o app da
 - **Bateria:** nível dos fones esquerdo e direito com indicação de carregamento, e do estojo nos modelos que informam.
 - **Encontrar os fones:** toca um som alto para você achar os fones.
 - **Barra de menus:** bateria, modo de ruído e modo jogo a um clique.
+- **Fica fora do caminho:** o BudBridge pode abrir ao iniciar sessão e aparece na barra de menus e no Dock só enquanto seus fones estão conectados. Ele também pode abrir a janela quando os fones se conectam. As opções ficam em **BudBridge › Ajustes…** (⌘,).
 - **Idiomas:** inglês e português do Brasil, seguindo o idioma do seu Mac.
 
 ## Instalação
