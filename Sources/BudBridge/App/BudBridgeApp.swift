@@ -50,6 +50,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         coordinator.presence.didFinishLaunching(atLogin: AppKitPresenceHost.isLaunchingAtLogin)
     }
 
+    /// Opening BudBridge again (Finder, Spotlight, the Dock) shows the main window. Implementing
+    /// this replaces SwiftUI's own reopen handling, so BudBridge opens the window itself.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        guard !flag else { return true }
+        coordinator.presence.reopenRequested()
+        return false
+    }
+
     /// BudBridge keeps running without a window, so it notices the earbuds connecting.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false

@@ -57,6 +57,7 @@ final class AppCoordinator {
         menuBar = MenuBarViewModel(store: store, audio: audio)
         presence = AppPresence(host: presenceHost, loginItem: loginItem, defaults: defaults)
         general = GeneralSettingsViewModel(presence: presence)
+        menuBar.onOpenControls = { [presence] in presence.windowRequested() }
 
         // Earbuds paired with this Mac for audio are connected automatically over BLE,
         // and the audio link follows whichever earbuds the control link selects.

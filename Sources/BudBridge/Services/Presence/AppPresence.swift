@@ -6,6 +6,8 @@ protocol PresenceHost: AnyObject {
     /// Called when the main window is shown (`true`) or closes (`false`).
     var onMainWindowChange: ((Bool) -> Void)? { get set }
     var isMainWindowOpen: Bool { get }
+    /// The main window is the one the user is working in (key, with BudBridge active).
+    var isMainWindowKey: Bool { get }
     func setDockIconVisible(_ visible: Bool)
     func closeMainWindow()
 }
@@ -47,10 +49,16 @@ final class AppPresence {
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let gracePeriod: Duration
     @ObservationIgnored private var isWindowOpen = false
-    @ObservationIgnored private var isInGracePeriod = false
+    /// Waiting to see if the earbuds come back before hiding.
+    @ObservationIgnored private(set) var isInGracePeriod = false
     @ObservationIgnored private var graceTimer: Task<Void, Never>?
+    /// The window was open before the earbuds disconnected and hasn't been reopened since, so the
+    /// end of the grace period may close it.
+    @ObservationIgnored private var closesWindowAfterGrace = false
     /// After a login launch, the window SwiftUI opens on its own is closed as soon as it appears.
+    /// Any window BudBridge or the user asks for clears this first.
     @ObservationIgnored private var closesLaunchWindow = false
+    @ObservationIgnored private var launchWindowTimer: Task<Void, Never>?
 
     private enum Keys {
         static let showsOnlyWhenConnected = "showsOnlyWhenConnected"
@@ -79,13 +87,18 @@ final class AppPresence {
     /// wants the window then.
     func didFinishLaunching(atLogin: Bool) {
         if atLogin, !(isEarbudsConnected && opensWindowOnConnect) {
+            // SwiftUI may have opened its window already (close it now) or may open it shortly
+            // (close it when it appears).
+            let hadWindow = host.isMainWindowOpen
             isWindowOpen = false
-            closesLaunchWindow = true
             host.closeMainWindow()
-            // Only the launch window: anything opened later is the user's.
-            Task { [weak self] in
-                try? await Task.sleep(for: .seconds(3))
-                self?.closesLaunchWindow = false
+            if !hadWindow {
+                closesLaunchWindow = true
+                launchWindowTimer = Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(10))
+                    guard !Task.isCancelled else { return }
+                    self?.closesLaunchWindow = false
+                }
             }
         } else {
             isWindowOpen = !atLogin || host.isMainWindowOpen
@@ -100,7 +113,10 @@ final class AppPresence {
         isEarbudsConnected = connected
         if connected {
             stopGracePeriod()
-            if opensWindowOnConnect, !host.isMainWindowOpen { wantsWindow = true }
+            if opensWindowOnConnect, !host.isMainWindowOpen {
+                windowRequested()
+                wantsWindow = true
+            }
         } else {
             startGracePeriod()
         }
@@ -115,7 +131,17 @@ final class AppPresence {
         }
         guard !isWindowOpen else { return }
         isWindowOpen = true
+        // Opened during the grace period: it's the user's now, so it stays.
+        closesWindowAfterGrace = false
         applyVisibility()
+    }
+
+    /// BudBridge or the user asked for the main window (open on connect, reopening the app,
+    /// Open Controls), so it must not be taken for the launch window.
+    func windowRequested() {
+        closesLaunchWindow = false
+        launchWindowTimer?.cancel()
+        launchWindowTimer = nil
     }
 
     func mainWindowDidClose() {
@@ -124,8 +150,19 @@ final class AppPresence {
         applyVisibility()
     }
 
+    /// The user opened BudBridge again (Finder, Spotlight, the Dock) and no window is showing.
+    func reopenRequested() {
+        windowRequested()
+        wantsWindow = true
+        applyVisibility()
+    }
+
+    /// The menu-bar label opened the window.
     func windowRequestHandled() {
         wantsWindow = false
+        isWindowOpen = true
+        closesWindowAfterGrace = false
+        applyVisibility()
     }
 
     // MARK: - Login item
@@ -154,6 +191,7 @@ final class AppPresence {
 
     private func startGracePeriod() {
         isInGracePeriod = true
+        closesWindowAfterGrace = isWindowOpen
         graceTimer?.cancel()
         graceTimer = Task { [weak self, gracePeriod] in
             try? await Task.sleep(for: gracePeriod)
@@ -173,15 +211,19 @@ final class AppPresence {
         graceTimer = nil
         guard !isEarbudsConnected, showsOnlyWhenConnected else { return }
         wantsWindow = false
-        if isWindowOpen {
+        // Leave a window the user is working in (e.g. after pressing Disconnect); BudBridge hides
+        // once they close it.
+        if isWindowOpen, closesWindowAfterGrace, !host.isMainWindowKey {
             isWindowOpen = false
             host.closeMainWindow()
         }
+        closesWindowAfterGrace = false
         applyVisibility()
     }
 
     private func applyVisibility() {
-        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || isWindowOpen
+        // A pending window request keeps the menu-bar label around, since the label opens it.
+        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || isWindowOpen || wantsWindow
         guard visible != isVisible else { return }
         isVisible = visible
         host.setDockIconVisible(visible)

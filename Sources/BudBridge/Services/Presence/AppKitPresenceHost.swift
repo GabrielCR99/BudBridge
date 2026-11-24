@@ -30,6 +30,10 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
         NSApp.windows.contains { Self.isMainWindow($0) && $0.isVisible }
     }
 
+    var isMainWindowKey: Bool {
+        NSApp.isActive && NSApp.keyWindow.map(Self.isMainWindow) == true
+    }
+
     func setDockIconVisible(_ visible: Bool) {
         NSApp.setActivationPolicy(visible ? .regular : .accessory)
     }

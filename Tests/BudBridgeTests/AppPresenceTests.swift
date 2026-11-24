@@ -5,6 +5,7 @@ import Testing
 final class FakePresenceHost: PresenceHost {
     var onMainWindowChange: ((Bool) -> Void)?
     var isMainWindowOpen = false
+    var isMainWindowKey = false
     private(set) var dockIcon: [Bool] = []
     private(set) var closeCount = 0
 
@@ -210,6 +211,114 @@ struct AppPresenceTests {
         #expect(presence.loginItemNeedsApproval)
         presence.openLoginItemsSettings()
         #expect(login.openedSettings)
+    }
+
+    // MARK: - Launch window
+
+    @Test func openOnConnectRightAfterLoginKeepsItsWindow() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.opensWindowOnConnect = true
+        presence.didFinishLaunching(atLogin: true)
+
+        // The earbuds connect a moment later and BudBridge opens the window for them.
+        presence.earbudsConnectionChanged(true)
+        #expect(presence.wantsWindow)
+        presence.windowRequestHandled()
+        host.userOpensWindow()
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+    }
+
+    @Test func launchWindowAlreadyOpenIsClosedOnlyOnce() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        host.userOpensWindow() // SwiftUI's launch window, already up
+        presence.didFinishLaunching(atLogin: true)
+        #expect(!host.isMainWindowOpen)
+        #expect(!presence.isVisible)
+
+        // The next window is the user's.
+        host.userOpensWindow()
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+    }
+
+    @Test func reopeningRightAfterLoginKeepsTheWindow() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.didFinishLaunching(atLogin: true)
+
+        // The user opens BudBridge from Spotlight (or Open Controls) before SwiftUI's window showed.
+        presence.windowRequested()
+        host.userOpensWindow()
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+    }
+
+    @Test func reopeningWhileHiddenShowsTheWindow() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.didFinishLaunching(atLogin: true)
+        #expect(!presence.isVisible)
+
+        // Finder or Spotlight with no window showing: the label comes back and opens it.
+        presence.reopenRequested()
+        #expect(presence.wantsWindow)
+        #expect(presence.isVisible)
+        presence.windowRequestHandled()
+        host.userOpensWindow()
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+
+        host.userClosesWindow()
+        #expect(!presence.isVisible)
+    }
+
+    // MARK: - Grace period and the user's window
+
+    @Test func windowOpenedDuringTheGracePeriodStays() async throws {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.earbudsConnectionChanged(true)
+        presence.didFinishLaunching(atLogin: false)
+        host.userOpensWindow()
+        host.userClosesWindow()
+
+        // The earbuds drop and the user opens BudBridge to reconnect them.
+        presence.earbudsConnectionChanged(false)
+        host.userOpensWindow()
+        try await waitUntil { !presence.isInGracePeriod }
+        #expect(host.closeCount == 0)
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+
+        host.userClosesWindow()
+        #expect(!presence.isVisible)
+    }
+
+    @Test func windowInUseIsNotClosedWhenTheGracePeriodEnds() async throws {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.earbudsConnectionChanged(true)
+        presence.didFinishLaunching(atLogin: false)
+        host.userOpensWindow()
+        host.isMainWindowKey = true
+
+        // The user presses Disconnect on the Connections page and keeps looking at the window.
+        presence.earbudsConnectionChanged(false)
+        try await waitUntil { !presence.isInGracePeriod }
+        #expect(host.closeCount == 0)
+        #expect(presence.isVisible)
+
+        host.userClosesWindow()
+        #expect(!presence.isVisible)
     }
 
     private func waitUntil(_ condition: () -> Bool) async throws {
