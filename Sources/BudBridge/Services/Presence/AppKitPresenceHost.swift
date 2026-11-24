@@ -5,22 +5,37 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
     var onMainWindowChange: ((Bool) -> Void)?
     var onOtherWindowsChange: (() -> Void)?
 
+    private var mainWindowOcclusion = OcclusionTracker()
+
     override init() {
         super.init()
         let center = NotificationCenter.default
-        // Becoming key covers windows the user opens; the occlusion change also covers a window
-        // shown while BudBridge is in the background, such as the one SwiftUI opens at launch.
-        // AppKit posts all three on the main thread.
-        center.addObserver(self, selector: #selector(windowDidShow(_:)), name: NSWindow.didBecomeKeyNotification, object: nil)
-        center.addObserver(self, selector: #selector(windowDidShow(_:)),
+        // Becoming key covers windows the user opens or goes back to; the occlusion change also
+        // covers a window shown while BudBridge is in the background, such as the one SwiftUI
+        // opens at launch. AppKit posts all three on the main thread.
+        center.addObserver(self, selector: #selector(windowDidBecomeKey(_:)), name: NSWindow.didBecomeKeyNotification, object: nil)
+        center.addObserver(self, selector: #selector(windowOcclusionDidChange(_:)),
                            name: NSWindow.didChangeOcclusionStateNotification, object: nil)
         center.addObserver(self, selector: #selector(windowWillClose(_:)), name: NSWindow.willCloseNotification, object: nil)
     }
 
-    @objc private func windowDidShow(_ notification: Notification) {
+    @objc private func windowDidBecomeKey(_ notification: Notification) {
         guard let window = notification.object as? NSWindow, window.isVisible else { return }
         if Self.isMainWindow(window) {
+            _ = mainWindowOcclusion.update(isOnScreen: true)
             onMainWindowChange?(true)
+        } else if Self.isOtherWindow(window) {
+            onOtherWindowsChange?()
+        }
+    }
+
+    /// Reports the main window only when it comes into view. Being covered, moving to another
+    /// Space, or the screen locking or sleeping isn't the window being shown or brought back.
+    @objc private func windowOcclusionDidChange(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
+        if Self.isMainWindow(window) {
+            let isOnScreen = window.isVisible && window.occlusionState.contains(.visible)
+            if mainWindowOcclusion.update(isOnScreen: isOnScreen) { onMainWindowChange?(true) }
         } else if Self.isOtherWindow(window) {
             onOtherWindowsChange?()
         }
@@ -29,6 +44,7 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
     @objc private func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow else { return }
         if Self.isMainWindow(window) {
+            mainWindowOcclusion.reset()
             onMainWindowChange?(false)
         } else if Self.isOtherWindow(window) {
             // The window is still visible while it's about to close; check once it's gone.
