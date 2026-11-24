@@ -43,8 +43,12 @@ final class AppPresence {
 
     /// Whether the menu-bar item and Dock icon are shown.
     private(set) var isVisible = true
-    /// The main window should open. The menu-bar label opens it (it's the view that can) and
-    /// calls `windowRequestHandled()`.
+    /// Opens the main window. Any view with SwiftUI's `openWindow` sets it (see
+    /// `providesWindowOpener(to:)`), so opening never depends on one particular view existing.
+    @ObservationIgnored var windowOpener: (() -> Void)?
+    /// Fallback while no view has set `windowOpener` yet: the main window should open, and the
+    /// menu-bar label opens it and calls `windowRequestHandled()`. Expires so an unhandled
+    /// request can't keep BudBridge visible.
     private(set) var wantsWindow = false
     private(set) var isEarbudsConnected = false
 
@@ -52,6 +56,8 @@ final class AppPresence {
     @ObservationIgnored private let loginItem: any LoginItem
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let gracePeriod: Duration
+    @ObservationIgnored private let windowRequestTimeout: Duration
+    @ObservationIgnored private var windowRequestTimer: Task<Void, Never>?
     @ObservationIgnored private var isWindowOpen = false
     /// Waiting to see if the earbuds come back before hiding.
     @ObservationIgnored private(set) var isInGracePeriod = false
@@ -70,11 +76,12 @@ final class AppPresence {
     }
 
     init(host: any PresenceHost, loginItem: any LoginItem, defaults: UserDefaults,
-         gracePeriod: Duration = .seconds(10)) {
+         gracePeriod: Duration = .seconds(10), windowRequestTimeout: Duration = .seconds(5)) {
         self.host = host
         self.loginItem = loginItem
         self.defaults = defaults
         self.gracePeriod = gracePeriod
+        self.windowRequestTimeout = windowRequestTimeout
         showsOnlyWhenConnected = defaults.object(forKey: Keys.showsOnlyWhenConnected) as? Bool ?? true
         opensWindowOnConnect = defaults.bool(forKey: Keys.opensWindowOnConnect)
         launchesAtLogin = loginItem.isEnabled
@@ -118,10 +125,7 @@ final class AppPresence {
         isEarbudsConnected = connected
         if connected {
             stopGracePeriod()
-            if opensWindowOnConnect, !host.isMainWindowOpen {
-                windowRequested()
-                wantsWindow = true
-            }
+            if opensWindowOnConnect, !host.isMainWindowOpen { openMainWindow() }
         } else {
             startGracePeriod()
         }
@@ -157,14 +161,40 @@ final class AppPresence {
 
     /// The user opened BudBridge again (Finder, Spotlight, the Dock) and no window is showing.
     func reopenRequested() {
-        windowRequested()
-        wantsWindow = true
-        applyVisibility()
+        openMainWindow()
     }
 
-    /// The menu-bar label opened the window.
+    /// The menu-bar label opened the window for a pending `wantsWindow`.
     func windowRequestHandled() {
+        stopWindowRequest()
+        windowDidOpenOnRequest()
+    }
+
+    private func openMainWindow() {
+        windowRequested()
+        if let windowOpener {
+            windowOpener()
+            windowDidOpenOnRequest()
+            return
+        }
+        wantsWindow = true
+        applyVisibility()
+        windowRequestTimer?.cancel()
+        windowRequestTimer = Task { [weak self, windowRequestTimeout] in
+            try? await Task.sleep(for: windowRequestTimeout)
+            guard !Task.isCancelled else { return }
+            self?.stopWindowRequest()
+            self?.applyVisibility()
+        }
+    }
+
+    private func stopWindowRequest() {
         wantsWindow = false
+        windowRequestTimer?.cancel()
+        windowRequestTimer = nil
+    }
+
+    private func windowDidOpenOnRequest() {
         isWindowOpen = true
         closesWindowAfterGrace = false
         applyVisibility()
@@ -215,7 +245,7 @@ final class AppPresence {
         isInGracePeriod = false
         graceTimer = nil
         guard !isEarbudsConnected, showsOnlyWhenConnected else { return }
-        wantsWindow = false
+        stopWindowRequest()
         // Leave a window the user is working in (e.g. after pressing Disconnect); BudBridge hides
         // once they close it.
         if isWindowOpen, closesWindowAfterGrace, !host.isMainWindowKey {

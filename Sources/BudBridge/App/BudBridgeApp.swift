@@ -11,6 +11,7 @@ struct BudBridgeApp: App {
         Window("BudBridge", id: "main") {
             RootView(coordinator: coordinator)
                 .frame(minWidth: 760, minHeight: 540)
+                .providesWindowOpener(to: coordinator.presence)
         }
         .windowToolbarStyle(.unified)
         .commands {
@@ -25,6 +26,7 @@ struct BudBridgeApp: App {
 
         MenuBarExtra(isInserted: menuBarItemShown) {
             MenuBarPanel(viewModel: coordinator.menuBar)
+                .providesWindowOpener(to: coordinator.presence)
         } label: {
             MenuBarLabel(viewModel: coordinator.menuBar.battery, presence: coordinator.presence)
         }
@@ -32,6 +34,7 @@ struct BudBridgeApp: App {
 
         Settings {
             GeneralSettingsView(viewModel: coordinator.general)
+                .providesWindowOpener(to: coordinator.presence)
         }
     }
 
@@ -78,13 +81,36 @@ private struct MenuBarLabel: View {
                 Image(systemName: "earbuds")
             }
         }
-        // The label is the one view that's always around while BudBridge is visible, so it
-        // opens the window when the earbuds connect.
+        .providesWindowOpener(to: presence)
+        // Fallback for a request made before any view could set `windowOpener`, e.g. the
+        // earbuds connecting while BudBridge launches.
         .onChange(of: presence.wantsWindow, initial: true) { _, wantsWindow in
             guard wantsWindow else { return }
             presence.windowRequestHandled()
             openWindow(id: "main")
             NSApp.activate()
+        }
+    }
+}
+
+extension View {
+    /// Gives `AppPresence` SwiftUI's `openWindow`, so it can open the main window itself (reopening
+    /// the app, open on connect) whichever of BudBridge's views is around.
+    func providesWindowOpener(to presence: AppPresence) -> some View {
+        modifier(WindowOpenerProvider(presence: presence))
+    }
+}
+
+private struct WindowOpenerProvider: ViewModifier {
+    let presence: AppPresence
+    @Environment(\.openWindow) private var openWindow
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            presence.windowOpener = { [openWindow] in
+                openWindow(id: "main")
+                NSApp.activate()
+            }
         }
     }
 }

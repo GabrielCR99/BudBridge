@@ -63,13 +63,15 @@ struct AppPresenceTests {
         let defaults: UserDefaults
     }
 
-    private func makePresence(grace: Duration = .milliseconds(20)) -> Setup {
+    private func makePresence(grace: Duration = .milliseconds(20),
+                              requestTimeout: Duration = .milliseconds(30)) -> Setup {
         let host = FakePresenceHost()
         let login = FakeLoginItem()
         let suite = "BudBridgeTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defaults.removePersistentDomain(forName: suite)
-        let presence = AppPresence(host: host, loginItem: login, defaults: defaults, gracePeriod: grace)
+        let presence = AppPresence(host: host, loginItem: login, defaults: defaults, gracePeriod: grace,
+                                    windowRequestTimeout: requestTimeout)
         return Setup(presence: presence, host: host, login: login, defaults: defaults)
     }
 
@@ -330,6 +332,61 @@ struct AppPresenceTests {
         #expect(presence.isVisible)
 
         host.userClosesWindow()
+        #expect(!presence.isVisible)
+    }
+
+    // MARK: - Opening the window
+
+    @Test func reopeningOpensTheWindowDirectlyWhenAViewProvidedTheOpener() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        var opened = 0
+        presence.windowOpener = {
+            opened += 1
+            host.userOpensWindow()
+        }
+        presence.didFinishLaunching(atLogin: true)
+        #expect(!presence.isVisible)
+
+        // Works without the menu-bar label (e.g. the user removed the item).
+        presence.reopenRequested()
+        #expect(opened == 1)
+        #expect(!presence.wantsWindow)
+        #expect(host.isMainWindowOpen)
+        #expect(presence.isVisible)
+
+        host.userClosesWindow()
+        #expect(!presence.isVisible)
+    }
+
+    @Test func openOnConnectUsesTheOpener() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        var opened = 0
+        presence.windowOpener = {
+            opened += 1
+            host.userOpensWindow()
+        }
+        presence.opensWindowOnConnect = true
+        presence.didFinishLaunching(atLogin: true)
+        presence.earbudsConnectionChanged(true)
+        #expect(opened == 1)
+        #expect(!presence.wantsWindow)
+        #expect(host.isMainWindowOpen)
+    }
+
+    @Test func unhandledWindowRequestDoesNotKeepBudBridgeVisible() async throws {
+        let setup = makePresence()
+        let presence = setup.presence
+        presence.didFinishLaunching(atLogin: true)
+
+        // No view has provided the opener and the label never handles the request.
+        presence.reopenRequested()
+        #expect(presence.wantsWindow)
+        #expect(presence.isVisible)
+        try await waitUntil { !presence.wantsWindow }
         #expect(!presence.isVisible)
     }
 
