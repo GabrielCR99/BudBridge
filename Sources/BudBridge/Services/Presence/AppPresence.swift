@@ -116,7 +116,10 @@ final class AppPresence {
                 }
             }
         } else {
-            isWindowOpen = !atLogin || host.isMainWindowOpen
+            isWindowOpen = host.isMainWindowOpen
+            // A manual launch always shows the window, even when SwiftUI restores none (e.g. the
+            // user quit with no window open). If it never shows, the request expires.
+            if !atLogin, !isWindowOpen { openMainWindow() }
         }
         applyVisibility()
     }
@@ -142,16 +145,17 @@ final class AppPresence {
             return
         }
         stopWindowRequest()
+        // Shown or brought back during the grace period: it's the user's now, so it stays.
+        closesWindowAfterGrace = false
         guard !isWindowOpen else { return }
         isWindowOpen = true
-        // Opened during the grace period: it's the user's now, so it stays.
-        closesWindowAfterGrace = false
         applyVisibility()
     }
 
     /// BudBridge or the user asked for the main window (open on connect, reopening the app,
     /// Open Controls), so it must not be taken for the launch window.
     func windowRequested() {
+        closesWindowAfterGrace = false
         closesLaunchWindow = false
         launchWindowTimer?.cancel()
         launchWindowTimer = nil
