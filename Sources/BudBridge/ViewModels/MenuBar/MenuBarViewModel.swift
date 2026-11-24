@@ -16,6 +16,8 @@ final class MenuBarViewModel {
     let switches: SwitchesViewModel
     let connections: ConnectionsStatusViewModel
 
+    /// Called when the user opens the main window from the panel.
+    @ObservationIgnored var onOpenControls: (() -> Void)?
     @ObservationIgnored private let store: HeadphonesStore
 
     init(store: HeadphonesStore, audio: any AudioConnecting) {
@@ -35,6 +37,10 @@ final class MenuBarViewModel {
         case .paused: .released
         default: .searching
         }
+    }
+
+    func openControls() {
+        onOpenControls?()
     }
 
     func takeControl() {

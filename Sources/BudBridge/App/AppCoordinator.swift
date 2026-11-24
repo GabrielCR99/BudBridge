@@ -20,6 +20,8 @@ final class AppCoordinator {
     let settings: SettingsViewModel
     let connections: ConnectionsViewModel
     let menuBar: MenuBarViewModel
+    let presence: AppPresence
+    let general: GeneralSettingsViewModel
 
     @ObservationIgnored private let store: HeadphonesStore
     @ObservationIgnored private let audio: any AudioConnecting
@@ -35,6 +37,8 @@ final class AppCoordinator {
         audio: any AudioConnecting = AudioConnection(),
         finder: any FindTonePlaying = FindTone(),
         effects: EffectLibrary = EffectLibrary(),
+        presenceHost: any PresenceHost = AppKitPresenceHost(),
+        loginItem: any LoginItem = MainAppLoginItem(),
         defaults: UserDefaults = .standard
     ) {
         let store = HeadphonesStore(transport: transport, panels: panels, defaults: defaults)
@@ -51,10 +55,25 @@ final class AppCoordinator {
         settings = SettingsViewModel(store: store, audio: audio, finder: finder)
         connections = ConnectionsViewModel(store: store, audio: audio)
         menuBar = MenuBarViewModel(store: store, audio: audio)
+        presence = AppPresence(host: presenceHost, loginItem: loginItem, defaults: defaults)
+        general = GeneralSettingsViewModel(presence: presence)
+        menuBar.onOpenControls = { [presence] in presence.windowRequested() }
 
         // Earbuds paired with this Mac for audio are connected automatically over BLE,
         // and the audio link follows whichever earbuds the control link selects.
         store.pairedAudioAddresses = { [audio] in audio.pairedAddresses }
         store.onAdvertisementChange = { [audio] ad in audio.focus(on: ad) }
+
+        // BudBridge shows itself while the earbuds' audio link is up, and hides when it drops.
+        followAudioConnection()
+    }
+
+    private func followAudioConnection() {
+        let isConnected = withObservationTracking {
+            audio.isConnected
+        } onChange: { [weak self] in
+            Task { @MainActor in self?.followAudioConnection() }
+        }
+        presence.earbudsConnectionChanged(isConnected)
     }
 }

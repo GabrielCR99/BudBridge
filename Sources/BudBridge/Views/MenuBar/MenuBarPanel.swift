@@ -81,6 +81,7 @@ struct MenuBarPanel: View {
         Button("Open Controls") {
             // Close the panel first, so it doesn't stay open on top of the window.
             dismiss()
+            viewModel.openControls()
             openWindow(id: "main")
             NSApp.activate()
         }

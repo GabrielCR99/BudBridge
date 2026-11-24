@@ -1,6 +1,7 @@
 @testable import BudBridge
 import Foundation
 import QCYKit
+import Testing
 
 /// A `ControlTransport` that records what the store asks for and lets tests play the earbuds' part.
 final class FakeTransport: ControlTransport {
@@ -189,4 +190,87 @@ enum Fixtures {
         transport.clearWrites()
         return (store, transport, audio)
     }
+}
+
+// MARK: - AppPresence
+
+final class FakePresenceHost: PresenceHost {
+    var onMainWindowChange: ((Bool) -> Void)?
+    var isMainWindowOpen = false
+    var isMainWindowKey = false
+    var onOtherWindowsChange: (() -> Void)?
+    var hasOtherWindowsOpen = false
+    private(set) var dockIcon: [Bool] = []
+    private(set) var closeCount = 0
+
+    func setDockIconVisible(_ visible: Bool) { dockIcon.append(visible) }
+
+    func closeMainWindow() {
+        closeCount += 1
+        if isMainWindowOpen { userClosesWindow() }
+    }
+
+    func userOpensWindow() {
+        isMainWindowOpen = true
+        onMainWindowChange?(true)
+    }
+
+    func userClosesWindow() {
+        isMainWindowOpen = false
+        onMainWindowChange?(false)
+    }
+
+    func userOpensSettings() {
+        hasOtherWindowsOpen = true
+        onOtherWindowsChange?()
+    }
+
+    func userClosesSettings() {
+        hasOtherWindowsOpen = false
+        onOtherWindowsChange?()
+    }
+}
+
+final class FakeLoginItem: LoginItem {
+    struct Failure: Error {}
+
+    var isEnabled = false
+    var needsApproval = false
+    var fails = false
+    private(set) var openedSettings = false
+
+    func setEnabled(_ enabled: Bool) throws {
+        if fails { throw Failure() }
+        isEnabled = enabled
+    }
+
+    func openSystemSettings() { openedSettings = true }
+}
+
+struct PresenceSetup {
+    let presence: AppPresence
+    let host: FakePresenceHost
+    let login: FakeLoginItem
+    let defaults: UserDefaults
+}
+
+/// An `AppPresence` with fakes, its defaults isolated in a fresh suite, and short timers.
+func makePresence(grace: Duration = .milliseconds(20),
+                  requestTimeout: Duration = .milliseconds(30)) -> PresenceSetup {
+    let host = FakePresenceHost()
+    let login = FakeLoginItem()
+    let suite = "BudBridgeTests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite) ?? .standard
+    defaults.removePersistentDomain(forName: suite)
+    let presence = AppPresence(host: host, loginItem: login, defaults: defaults, gracePeriod: grace,
+                                windowRequestTimeout: requestTimeout)
+    return PresenceSetup(presence: presence, host: host, login: login, defaults: defaults)
+}
+
+/// Waits up to a second for `condition`, for timers such as the grace period.
+func waitUntil(_ condition: () -> Bool) async throws {
+    for _ in 0..<100 where !condition() {
+        try await Task.sleep(for: .milliseconds(10))
+    }
+    #expect(condition())
 }

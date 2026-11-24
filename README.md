@@ -59,6 +59,7 @@ BudBridge was built and tested with the **QCY MeloBuds Pro**. Like QCY's phone a
 - **Battery:** left and right levels with charging state, plus the case on models that report it.
 - **Find Earbuds:** plays a loud chirp so you can track them down.
 - **Menu bar:** battery, noise mode and gaming mode, one click away.
+- **Stays out of the way:** BudBridge can open at login and shows up in the menu bar and Dock only while your earbuds are connected. It can also open its window when they connect. Find these options in **BudBridge › Settings…** (⌘,).
 - **Languages:** English and Brazilian Portuguese, following your Mac's language.
 
 ## Install

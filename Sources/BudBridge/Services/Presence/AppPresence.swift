@@ -1,0 +1,275 @@
+import Foundation
+import Observation
+
+/// What `AppPresence` asks of the app around it: the Dock icon and BudBridge's windows.
+protocol PresenceHost: AnyObject {
+    /// Called when the main window is shown (`true`) or closes (`false`).
+    var onMainWindowChange: ((Bool) -> Void)? { get set }
+    /// Called when another BudBridge window, such as Settings, is shown or has closed.
+    var onOtherWindowsChange: (() -> Void)? { get set }
+    var isMainWindowOpen: Bool { get }
+    /// Another BudBridge window (Settings, About) is open. The menu-bar panel doesn't count.
+    var hasOtherWindowsOpen: Bool { get }
+    /// The main window is the one the user is working in (key, with BudBridge active).
+    var isMainWindowKey: Bool { get }
+    func setDockIconVisible(_ visible: Bool)
+    func closeMainWindow()
+}
+
+/// Keeps BudBridge out of the way while the earbuds aren't connected to this Mac.
+///
+/// BudBridge keeps running in the background so it can notice the earbuds coming back. It is only
+/// *visible* (menu-bar item and Dock icon) while the earbuds' audio link is up or one of its windows
+/// is open. When they disconnect, it waits a grace period (brief dropouts are common), then closes the
+/// window and hides.
+@Observable
+final class AppPresence {
+    /// Hide the menu-bar item and Dock icon while the earbuds are disconnected.
+    var showsOnlyWhenConnected: Bool {
+        didSet {
+            defaults.set(showsOnlyWhenConnected, forKey: Keys.showsOnlyWhenConnected)
+            applyVisibility()
+        }
+    }
+
+    /// Open the main window whenever the earbuds connect.
+    var opensWindowOnConnect: Bool {
+        didSet { defaults.set(opensWindowOnConnect, forKey: Keys.opensWindowOnConnect) }
+    }
+
+    private(set) var launchesAtLogin: Bool
+    private(set) var loginItemNeedsApproval: Bool
+    private(set) var loginItemError: String?
+
+    /// Whether the menu-bar item and Dock icon are shown.
+    private(set) var isVisible = true
+    /// Opens the main window. Any view with SwiftUI's `openWindow` sets it (see
+    /// `providesWindowOpener(to:)`), so opening never depends on one particular view existing.
+    @ObservationIgnored var windowOpener: (() -> Void)?
+    /// Fallback while no view has set `windowOpener` yet: the main window should open, and the
+    /// menu-bar label opens it and calls `windowRequestHandled()`. Expires so an unhandled
+    /// request can't keep BudBridge visible.
+    private(set) var wantsWindow = false
+    private(set) var isEarbudsConnected = false
+
+    @ObservationIgnored private let host: any PresenceHost
+    @ObservationIgnored private let loginItem: any LoginItem
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let gracePeriod: Duration
+    @ObservationIgnored private let windowRequestTimeout: Duration
+    @ObservationIgnored private var windowRequestTimer: Task<Void, Never>?
+    /// The main window was asked for and hasn't shown yet. Keeps BudBridge visible until the host
+    /// reports the window, or the request expires.
+    @ObservationIgnored private(set) var isWindowRequestPending = false
+    @ObservationIgnored private var isWindowOpen = false
+    /// Waiting to see if the earbuds come back before hiding.
+    @ObservationIgnored private(set) var isInGracePeriod = false
+    @ObservationIgnored private var graceTimer: Task<Void, Never>?
+    /// The window was open before the earbuds disconnected and hasn't been reopened since, so the
+    /// end of the grace period may close it.
+    @ObservationIgnored private var closesWindowAfterGrace = false
+    /// After a login launch, the window SwiftUI opens on its own is closed as soon as it appears.
+    /// Any window BudBridge or the user asks for clears this first.
+    @ObservationIgnored private var closesLaunchWindow = false
+    @ObservationIgnored private var launchWindowTimer: Task<Void, Never>?
+
+    private enum Keys {
+        static let showsOnlyWhenConnected = "showsOnlyWhenConnected"
+        static let opensWindowOnConnect = "opensWindowOnConnect"
+    }
+
+    init(host: any PresenceHost, loginItem: any LoginItem, defaults: UserDefaults,
+         gracePeriod: Duration = .seconds(10), windowRequestTimeout: Duration = .seconds(5)) {
+        self.host = host
+        self.loginItem = loginItem
+        self.defaults = defaults
+        self.gracePeriod = gracePeriod
+        self.windowRequestTimeout = windowRequestTimeout
+        showsOnlyWhenConnected = defaults.object(forKey: Keys.showsOnlyWhenConnected) as? Bool ?? true
+        opensWindowOnConnect = defaults.bool(forKey: Keys.opensWindowOnConnect)
+        launchesAtLogin = loginItem.isEnabled
+        loginItemNeedsApproval = loginItem.needsApproval
+        host.onMainWindowChange = { [weak self] isOpen in
+            if isOpen { self?.mainWindowDidOpen() } else { self?.mainWindowDidClose() }
+        }
+        host.onOtherWindowsChange = { [weak self] in self?.applyVisibility() }
+    }
+
+    // MARK: - Launch
+
+    /// Called once the app has finished launching. A manual launch shows the window as usual;
+    /// a login launch stays in the background unless the earbuds are connected and the user
+    /// wants the window then.
+    func didFinishLaunching(atLogin: Bool) {
+        if atLogin, !(isEarbudsConnected && opensWindowOnConnect) {
+            // SwiftUI may have opened its window already (close it now) or may open it shortly
+            // (close it when it appears).
+            let hadWindow = host.isMainWindowOpen
+            isWindowOpen = false
+            host.closeMainWindow()
+            if !hadWindow {
+                closesLaunchWindow = true
+                launchWindowTimer = Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(10))
+                    guard !Task.isCancelled else { return }
+                    self?.closesLaunchWindow = false
+                }
+            }
+        } else {
+            isWindowOpen = host.isMainWindowOpen
+            // A manual launch always shows the window, even when SwiftUI restores none (e.g. the
+            // user quit with no window open). If it never shows, the request expires.
+            if !atLogin, !isWindowOpen { openMainWindow() }
+        }
+        applyVisibility()
+    }
+
+    // MARK: - Events
+
+    func earbudsConnectionChanged(_ connected: Bool) {
+        guard connected != isEarbudsConnected else { return }
+        isEarbudsConnected = connected
+        if connected {
+            stopGracePeriod()
+            if opensWindowOnConnect, !host.isMainWindowOpen { openMainWindow() }
+        } else {
+            startGracePeriod()
+        }
+        applyVisibility()
+    }
+
+    func mainWindowDidOpen() {
+        if closesLaunchWindow {
+            closesLaunchWindow = false
+            host.closeMainWindow()
+            return
+        }
+        stopWindowRequest()
+        // Shown or brought back during the grace period: it's the user's now, so it stays.
+        closesWindowAfterGrace = false
+        guard !isWindowOpen else { return }
+        isWindowOpen = true
+        applyVisibility()
+    }
+
+    /// BudBridge or the user asked for the main window (open on connect, reopening the app,
+    /// Open Controls), so it must not be taken for the launch window.
+    func windowRequested() {
+        closesWindowAfterGrace = false
+        closesLaunchWindow = false
+        launchWindowTimer?.cancel()
+        launchWindowTimer = nil
+    }
+
+    func mainWindowDidClose() {
+        guard isWindowOpen else { return }
+        isWindowOpen = false
+        applyVisibility()
+    }
+
+    /// The user opened BudBridge again (Finder, Spotlight, the Dock) and no window is showing.
+    func reopenRequested() {
+        openMainWindow()
+    }
+
+    /// The menu-bar label asked SwiftUI for the window. It counts as open once the host reports it.
+    func windowRequestHandled() {
+        wantsWindow = false
+    }
+
+    private func openMainWindow() {
+        windowRequested()
+        isWindowRequestPending = true
+        // Without an opener yet, the menu-bar label opens the window (see `wantsWindow`).
+        if let windowOpener {
+            windowOpener()
+        } else {
+            wantsWindow = true
+        }
+        applyVisibility()
+        // The window counts as open only once the host reports it, so a request SwiftUI ignores
+        // can't keep BudBridge visible.
+        guard isWindowRequestPending else { return }
+        windowRequestTimer?.cancel()
+        windowRequestTimer = Task { [weak self, windowRequestTimeout] in
+            try? await Task.sleep(for: windowRequestTimeout)
+            guard !Task.isCancelled else { return }
+            self?.stopWindowRequest()
+            self?.applyVisibility()
+        }
+    }
+
+    private func stopWindowRequest() {
+        wantsWindow = false
+        isWindowRequestPending = false
+        windowRequestTimer?.cancel()
+        windowRequestTimer = nil
+    }
+
+    // MARK: - Login item
+
+    func setLaunchesAtLogin(_ enabled: Bool) {
+        do {
+            try loginItem.setEnabled(enabled)
+            loginItemError = nil
+        } catch {
+            loginItemError = String(localized: "Couldn't change the login item: \(error.localizedDescription)")
+        }
+        refreshLoginItem()
+    }
+
+    /// The user can change the login item in System Settings too, so this re-reads it.
+    func refreshLoginItem() {
+        launchesAtLogin = loginItem.isEnabled
+        loginItemNeedsApproval = loginItem.needsApproval
+    }
+
+    func openLoginItemsSettings() {
+        loginItem.openSystemSettings()
+    }
+
+    // MARK: - Visibility
+
+    private func startGracePeriod() {
+        isInGracePeriod = true
+        closesWindowAfterGrace = isWindowOpen
+        graceTimer?.cancel()
+        graceTimer = Task { [weak self, gracePeriod] in
+            try? await Task.sleep(for: gracePeriod)
+            guard !Task.isCancelled else { return }
+            self?.gracePeriodEnded()
+        }
+    }
+
+    private func stopGracePeriod() {
+        isInGracePeriod = false
+        graceTimer?.cancel()
+        graceTimer = nil
+    }
+
+    private func gracePeriodEnded() {
+        isInGracePeriod = false
+        graceTimer = nil
+        guard !isEarbudsConnected, showsOnlyWhenConnected else { return }
+        stopWindowRequest()
+        // Leave a window the user is working in (e.g. after pressing Disconnect); BudBridge hides
+        // once they close it.
+        if isWindowOpen, closesWindowAfterGrace, !host.isMainWindowKey {
+            isWindowOpen = false
+            host.closeMainWindow()
+        }
+        closesWindowAfterGrace = false
+        applyVisibility()
+    }
+
+    private func applyVisibility() {
+        // A pending window request keeps BudBridge (and the menu-bar label, the fallback opener) around.
+        // Any open window keeps BudBridge visible, so a window left open (e.g. Settings) never
+        // ends up without a Dock icon, app menu or menu-bar item.
+        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || isWindowRequestPending
+            || isWindowOpen || host.hasOtherWindowsOpen
+        guard visible != isVisible else { return }
+        isVisible = visible
+        host.setDockIconVisible(visible)
+    }
+}
