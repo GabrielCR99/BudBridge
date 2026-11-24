@@ -6,6 +6,8 @@ final class FakePresenceHost: PresenceHost {
     var onMainWindowChange: ((Bool) -> Void)?
     var isMainWindowOpen = false
     var isMainWindowKey = false
+    var onOtherWindowsChange: (() -> Void)?
+    var hasOtherWindowsOpen = false
     private(set) var dockIcon: [Bool] = []
     private(set) var closeCount = 0
 
@@ -24,6 +26,16 @@ final class FakePresenceHost: PresenceHost {
     func userClosesWindow() {
         isMainWindowOpen = false
         onMainWindowChange?(false)
+    }
+
+    func userOpensSettings() {
+        hasOtherWindowsOpen = true
+        onOtherWindowsChange?()
+    }
+
+    func userClosesSettings() {
+        hasOtherWindowsOpen = false
+        onOtherWindowsChange?()
     }
 }
 
@@ -318,6 +330,59 @@ struct AppPresenceTests {
         #expect(presence.isVisible)
 
         host.userClosesWindow()
+        #expect(!presence.isVisible)
+    }
+
+    // MARK: - Other windows
+
+    @Test func settingsWindowKeepsBudBridgeVisible() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.didFinishLaunching(atLogin: false)
+        host.userOpensWindow()
+
+        // Disconnected: the user presses ⌘, and then closes the main window.
+        host.userOpensSettings()
+        host.userClosesWindow()
+        #expect(presence.isVisible)
+        #expect(host.dockIcon.isEmpty)
+
+        host.userClosesSettings()
+        #expect(!presence.isVisible)
+        #expect(host.dockIcon == [false])
+    }
+
+    @Test func turningTheSettingOnWithSettingsOpenKeepsBudBridgeVisible() {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.showsOnlyWhenConnected = false
+        presence.didFinishLaunching(atLogin: false)
+        host.userOpensWindow()
+        host.userOpensSettings()
+        host.userClosesWindow()
+
+        presence.showsOnlyWhenConnected = true
+        #expect(presence.isVisible)
+        host.userClosesSettings()
+        #expect(!presence.isVisible)
+    }
+
+    @Test func gracePeriodLeavesSettingsOpenAndVisible() async throws {
+        let setup = makePresence()
+        let presence = setup.presence
+        let host = setup.host
+        presence.earbudsConnectionChanged(true)
+        presence.didFinishLaunching(atLogin: false)
+        host.userOpensWindow()
+        host.userOpensSettings()
+
+        presence.earbudsConnectionChanged(false)
+        try await waitUntil { !presence.isInGracePeriod }
+        #expect(!host.isMainWindowOpen) // the main window still closes
+        #expect(presence.isVisible)
+        host.userClosesSettings()
         #expect(!presence.isVisible)
     }
 

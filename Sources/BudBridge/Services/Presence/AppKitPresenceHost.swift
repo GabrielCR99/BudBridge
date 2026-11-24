@@ -1,8 +1,9 @@
 import AppKit
 
-/// The real `PresenceHost`: switches the Dock icon and watches the main window through AppKit.
+/// The real `PresenceHost`: switches the Dock icon and watches BudBridge's windows through AppKit.
 final class AppKitPresenceHost: NSObject, PresenceHost {
     var onMainWindowChange: ((Bool) -> Void)?
+    var onOtherWindowsChange: (() -> Void)?
 
     override init() {
         super.init()
@@ -17,17 +18,30 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
     }
 
     @objc private func windowDidShow(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow, Self.isMainWindow(window), window.isVisible else { return }
-        onMainWindowChange?(true)
+        guard let window = notification.object as? NSWindow, window.isVisible else { return }
+        if Self.isMainWindow(window) {
+            onMainWindowChange?(true)
+        } else if Self.isOtherWindow(window) {
+            onOtherWindowsChange?()
+        }
     }
 
     @objc private func windowWillClose(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow, Self.isMainWindow(window) else { return }
-        onMainWindowChange?(false)
+        guard let window = notification.object as? NSWindow else { return }
+        if Self.isMainWindow(window) {
+            onMainWindowChange?(false)
+        } else if Self.isOtherWindow(window) {
+            // The window is still visible while it's about to close; check once it's gone.
+            Task { @MainActor [weak self] in self?.onOtherWindowsChange?() }
+        }
     }
 
     var isMainWindowOpen: Bool {
         NSApp.windows.contains { Self.isMainWindow($0) && $0.isVisible }
+    }
+
+    var hasOtherWindowsOpen: Bool {
+        NSApp.windows.contains { Self.isOtherWindow($0) && $0.isVisible }
     }
 
     var isMainWindowKey: Bool {
@@ -50,6 +64,12 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
         guard let event = NSAppleEventManager.shared().currentAppleEvent,
               event.eventID == kAEOpenApplication else { return false }
         return event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
+    }
+
+    /// A window of BudBridge's own other than the main one, such as Settings or About. Panels
+    /// (the menu-bar extra) and windows that can't be main (the status item) don't count.
+    private static func isOtherWindow(_ window: NSWindow) -> Bool {
+        !isMainWindow(window) && window.canBecomeMain && !(window is NSPanel)
     }
 
     /// SwiftUI names the window of `Window(_:id:)` after its id ("main", or "main-AppWindow-1").

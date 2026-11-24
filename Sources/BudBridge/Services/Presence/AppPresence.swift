@@ -1,11 +1,15 @@
 import Foundation
 import Observation
 
-/// What `AppPresence` asks of the app around it: the Dock icon and the main window.
+/// What `AppPresence` asks of the app around it: the Dock icon and BudBridge's windows.
 protocol PresenceHost: AnyObject {
     /// Called when the main window is shown (`true`) or closes (`false`).
     var onMainWindowChange: ((Bool) -> Void)? { get set }
+    /// Called when another BudBridge window, such as Settings, is shown or has closed.
+    var onOtherWindowsChange: (() -> Void)? { get set }
     var isMainWindowOpen: Bool { get }
+    /// Another BudBridge window (Settings, About) is open. The menu-bar panel doesn't count.
+    var hasOtherWindowsOpen: Bool { get }
     /// The main window is the one the user is working in (key, with BudBridge active).
     var isMainWindowKey: Bool { get }
     func setDockIconVisible(_ visible: Bool)
@@ -15,8 +19,8 @@ protocol PresenceHost: AnyObject {
 /// Keeps BudBridge out of the way while the earbuds aren't connected to this Mac.
 ///
 /// BudBridge keeps running in the background so it can notice the earbuds coming back. It is only
-/// *visible* (menu-bar item and Dock icon) while the earbuds' audio link is up or the main window is
-/// open. When they disconnect, it waits a grace period (brief dropouts are common), then closes the
+/// *visible* (menu-bar item and Dock icon) while the earbuds' audio link is up or one of its windows
+/// is open. When they disconnect, it waits a grace period (brief dropouts are common), then closes the
 /// window and hides.
 @Observable
 final class AppPresence {
@@ -78,6 +82,7 @@ final class AppPresence {
         host.onMainWindowChange = { [weak self] isOpen in
             if isOpen { self?.mainWindowDidOpen() } else { self?.mainWindowDidClose() }
         }
+        host.onOtherWindowsChange = { [weak self] in self?.applyVisibility() }
     }
 
     // MARK: - Launch
@@ -223,7 +228,10 @@ final class AppPresence {
 
     private func applyVisibility() {
         // A pending window request keeps the menu-bar label around, since the label opens it.
-        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || isWindowOpen || wantsWindow
+        // Any open window keeps BudBridge visible, so a window left open (e.g. Settings) never
+        // ends up without a Dock icon, app menu or menu-bar item.
+        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || wantsWindow
+            || isWindowOpen || host.hasOtherWindowsOpen
         guard visible != isVisible else { return }
         isVisible = visible
         host.setDockIconVisible(visible)
