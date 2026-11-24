@@ -58,6 +58,9 @@ final class AppPresence {
     @ObservationIgnored private let gracePeriod: Duration
     @ObservationIgnored private let windowRequestTimeout: Duration
     @ObservationIgnored private var windowRequestTimer: Task<Void, Never>?
+    /// The main window was asked for and hasn't shown yet. Keeps BudBridge visible until the host
+    /// reports the window, or the request expires.
+    @ObservationIgnored private(set) var isWindowRequestPending = false
     @ObservationIgnored private var isWindowOpen = false
     /// Waiting to see if the earbuds come back before hiding.
     @ObservationIgnored private(set) var isInGracePeriod = false
@@ -138,6 +141,7 @@ final class AppPresence {
             host.closeMainWindow()
             return
         }
+        stopWindowRequest()
         guard !isWindowOpen else { return }
         isWindowOpen = true
         // Opened during the grace period: it's the user's now, so it stays.
@@ -164,21 +168,24 @@ final class AppPresence {
         openMainWindow()
     }
 
-    /// The menu-bar label opened the window for a pending `wantsWindow`.
+    /// The menu-bar label asked SwiftUI for the window. It counts as open once the host reports it.
     func windowRequestHandled() {
-        stopWindowRequest()
-        windowDidOpenOnRequest()
+        wantsWindow = false
     }
 
     private func openMainWindow() {
         windowRequested()
+        isWindowRequestPending = true
+        // Without an opener yet, the menu-bar label opens the window (see `wantsWindow`).
         if let windowOpener {
             windowOpener()
-            windowDidOpenOnRequest()
-            return
+        } else {
+            wantsWindow = true
         }
-        wantsWindow = true
         applyVisibility()
+        // The window counts as open only once the host reports it, so a request SwiftUI ignores
+        // can't keep BudBridge visible.
+        guard isWindowRequestPending else { return }
         windowRequestTimer?.cancel()
         windowRequestTimer = Task { [weak self, windowRequestTimeout] in
             try? await Task.sleep(for: windowRequestTimeout)
@@ -190,14 +197,9 @@ final class AppPresence {
 
     private func stopWindowRequest() {
         wantsWindow = false
+        isWindowRequestPending = false
         windowRequestTimer?.cancel()
         windowRequestTimer = nil
-    }
-
-    private func windowDidOpenOnRequest() {
-        isWindowOpen = true
-        closesWindowAfterGrace = false
-        applyVisibility()
     }
 
     // MARK: - Login item
@@ -257,10 +259,10 @@ final class AppPresence {
     }
 
     private func applyVisibility() {
-        // A pending window request keeps the menu-bar label around, since the label opens it.
+        // A pending window request keeps BudBridge (and the menu-bar label, the fallback opener) around.
         // Any open window keeps BudBridge visible, so a window left open (e.g. Settings) never
         // ends up without a Dock icon, app menu or menu-bar item.
-        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || wantsWindow
+        let visible = !showsOnlyWhenConnected || isEarbudsConnected || isInGracePeriod || isWindowRequestPending
             || isWindowOpen || host.hasOtherWindowsOpen
         guard visible != isVisible else { return }
         isVisible = visible

@@ -66,10 +66,10 @@ final class AppKitPresenceHost: NSObject, PresenceHost {
         return event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
     }
 
-    /// A window of BudBridge's own other than the main one, such as Settings or About. Panels
-    /// (the menu-bar extra) and windows that can't be main (the status item) don't count.
+    /// A window of BudBridge's own other than the main one, such as Settings or About (a panel).
+    /// The menu-bar extra and the status item sit above the normal level, so they don't count.
     private static func isOtherWindow(_ window: NSWindow) -> Bool {
-        !isMainWindow(window) && window.canBecomeMain && !(window is NSPanel)
+        !isMainWindow(window) && window.level == .normal && window.styleMask.contains(.titled)
     }
 
     /// SwiftUI names the window of `Window(_:id:)` after its id ("main", or "main-AppWindow-1").

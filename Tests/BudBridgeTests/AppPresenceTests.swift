@@ -377,6 +377,21 @@ struct AppPresenceTests {
         #expect(host.isMainWindowOpen)
     }
 
+    @Test func openerThatShowsNothingDoesNotKeepBudBridgeVisible() async throws {
+        let setup = makePresence()
+        let presence = setup.presence
+        var opened = 0
+        presence.windowOpener = { opened += 1 } // SwiftUI ignores the request
+        presence.didFinishLaunching(atLogin: true)
+
+        presence.reopenRequested()
+        #expect(opened == 1)
+        #expect(presence.isWindowRequestPending)
+        #expect(presence.isVisible)
+        try await waitUntil { !presence.isWindowRequestPending }
+        #expect(!presence.isVisible)
+    }
+
     @Test func unhandledWindowRequestDoesNotKeepBudBridgeVisible() async throws {
         let setup = makePresence()
         let presence = setup.presence
