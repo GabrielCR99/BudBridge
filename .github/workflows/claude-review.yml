@@ -1,0 +1,72 @@
+# Code review by Claude on every pull request, with inline comments and a summary.
+# Setup (once): install the Claude GitHub App on this repository (https://github.com/apps/claude)
+# and add the repository secret CLAUDE_CODE_OAUTH_TOKEN (create it with `claude setup-token`).
+# Pull requests from forks and Dependabot are skipped: they don't get the secret.
+name: Claude Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude review
+    if: github.event.pull_request.draft == false && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      # Exchanged for the Claude GitHub App's token, so comments come from claude[bot].
+      id-token: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Review with Claude
+        uses: anthropics/claude-code-action@eb56b6666facdbd501035f4a0269d8caee2e7a8b # v1.0.289
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. The PR branch is checked out in the working directory.
+            Read README.md (Architecture, Localization) first for the project's conventions.
+
+            Look for, in order of importance:
+            1. Bugs: wrong behavior, crashes, unhandled edge cases, race conditions.
+            2. Swift concurrency: main-actor isolation (the BudBridge target defaults to MainActor),
+               Sendable problems, callbacks from IOBluetooth/CoreBluetooth queues touching UI state.
+            3. Architecture: the one-way flow Views → ViewModels → services; views must not create
+               services, and new services should sit behind a small protocol with a fake in Tests.
+            4. Tests: new behavior in view models and services should be covered with Swift Testing.
+            5. Localization: every new user-facing string needs a pt-BR entry in
+               Resources/Localizable.xcstrings.
+            6. Security and privacy: secrets, logging personal data, unsafe workflow changes.
+
+            Rules:
+            - Only comment on lines this PR changes. Don't comment on style that SwiftLint enforces.
+            - Report real problems only, each with why it matters and a concrete fix. No praise,
+              no restating the diff.
+            - If this PR already has review comments from you, don't repeat them; only report
+              problems that are new or still unaddressed.
+            - Use mcp__github_inline_comment__create_inline_comment (with confirmed: true) for each
+              specific issue.
+            - Then post one short summary with `gh pr comment`: the verdict and the issue count by
+              severity. If you found nothing, say so in one line.
+            - Only post GitHub comments; don't reply with the review as a message.
+          claude_args: |
+            --model claude-opus-5-5
+            --max-turns 40
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Read,Grep,Glob"

@@ -129,8 +129,9 @@ QCY's settings lists aren't included in this repository or the app. Like the pho
   - **Security scan:** [gitleaks](https://github.com/gitleaks/gitleaks) checks the whole history for exposed secrets, and `scripts/check-forbidden-files.sh` fails if files such as `.env`, certificates or provisioning profiles are tracked.
   - **Build and test** on macOS 26: `swift test`, then `scripts/build-app.sh`. The zipped app is kept as a workflow artifact for 7 days.
 - **Release** ([`release.yml`](.github/workflows/release.yml)) runs by hand from **Actions › Release › Run workflow** with a version such as `1.1.0`. It checks the version and that it runs on `main`, runs the tests, builds the app with that version, and publishes the tag `v1.1.0` as a GitHub Release with the zip and its SHA-256 checksum.
+- **Claude Review** ([`claude-review.yml`](.github/workflows/claude-review.yml)) reviews every pull request that isn't a draft with [Claude Code](https://github.com/anthropics/claude-code-action): inline comments on the changed lines and one summary comment. It needs the [Claude GitHub App](https://github.com/apps/claude) on the repository and a `CLAUDE_CODE_OAUTH_TOKEN` secret (from `claude setup-token`). Pull requests from forks and Dependabot are skipped.
 
-Actions are pinned to commit SHAs, jobs get read-only permissions (only the release job can write), and Dependabot proposes updates weekly.
+Actions are pinned to commit SHAs, jobs get read-only permissions (only the release job can write to the repository, and the review job can comment on pull requests), and Dependabot proposes updates weekly.
 
 ### Branches
 
